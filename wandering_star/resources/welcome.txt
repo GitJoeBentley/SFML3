@@ -1,0 +1,19 @@
+Welcome to Joe's SFML (Simple Fast Multimedia Library) Demonstration
+
+Features demonstrated
+
+The RenderWindow
+Use of a RectangularShape background
+Use of Textures
+Music
+Sounds
+Sprites, creation and movement
+Window Processing Loop
+Events
+Handling the keyboard and mouse
+Handling collisions
+Use of color
+
+Press the space bar to continue
+
+
