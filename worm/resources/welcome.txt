@@ -1,0 +1,10 @@
+The Hungry Worm Game
+
+The goal of this game is to help the worm eat apples.  Use your arrow keys to
+steer the worm. You will score 10 points for each apple that the worm eats.  You 
+will lose 1 point each time you bump into the wall or into a rock.  Enter a 'Q' 
+to quit the game at any time.  If you quit the game, you will keep all of the 
+points that you have earned (maybe it will get you into the top 10 scores).  Each 
+time you eat an apple, the worm will grow and the game will speed up.  You are 
+allowed only 10 collisions with the wall or a rock.  Good luck and happy eating!
+
