@@ -5,11 +5,16 @@
 #include <SFML/Graphics.hpp>
 #include "Bullet.h"
 #include "Invaders.h"
+//#include "Sound.h"
+#include "Gun.h"
+#include "Explosion.h"
+//#include "Shield.h"
 
-class Invaders;  // forward declaration
+// class Invaders;  // forward declaration
 
-const sf::Vector2f BombSize{12.0f,24.0f};
-//extern const sf::Vector2u NumInvaders;
+class Sound;
+class Shield;
+
 
 class Bomb : public sf::Sprite
 {
@@ -23,10 +28,9 @@ public:
     sf::Vector2f nosePosition() const;
     float leftSidePosition() const;
     float rightSidePosition() const;
-protected:
+    bool manage(Sound& sound, Gun& gun, Explosion& explosion, int& gunInPlay, bool& gameOver, Shield* shields);
 
 private:
-    //sf::Texture& texture;
     int imageIndex;
     sf::Vector2f position;
 };

@@ -2,6 +2,7 @@
 #define SOUND_H
 
 #include "constants.h"
+#include "Bomb.h"
 #include <map>
 #include <string>
 #include <SFML/Audio.hpp>

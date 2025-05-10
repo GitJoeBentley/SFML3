@@ -14,11 +14,13 @@ const float BombSpeed = 0.0225f;
 const float SaucerSpeed = 0.01f;
 const float GunSpeed = 15.f;
 
-const int BombFrequency = 15000;
-const int SaucerFrequency = 20000;
+const int BombFrequency = 20000;
+const int SaucerFrequency = 30000;
 const sf::Vector2f InvaderSize{32.0f,32.0f};
 const sf::Vector2u ShieldSize(64u, 45u);
 const unsigned ShieldHeight = 45u;;
+const sf::Vector2f BombSize{12.0f,24.0f};
+
 const float ShieldYPosition = 0.9f * MainWindowHeight;
 const sf::Color GreenPixel(0,255,0,255);
 const sf::Color TransparentPixel(0,0,0,255);

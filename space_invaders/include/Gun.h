@@ -7,7 +7,9 @@
 #include "Constants.h"
 #include "Invaders.h"
 #include "Bullet.h"
-#include "Bomb.h"
+// #include "Bomb.h"
+
+class Bomb;
 
 class Gun : public sf::Sprite
 {

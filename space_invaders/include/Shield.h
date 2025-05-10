@@ -5,7 +5,6 @@
 #include <SFML/Graphics.hpp>
 
 #include "Constants.h"
-#include "ShieldImage.h"
 #include "Invaders.h"
 #include "Bomb.h"
 
