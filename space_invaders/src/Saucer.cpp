@@ -13,21 +13,22 @@ Saucer::Saucer(const sf::Texture& texture)
     setPosition((direction == East) ? sf::Vector2f(0.0f,80.0f): sf::Vector2f(static_cast<float>(MainWindowWidth),80.0f));
 }
 
+// Return true if the saucer is still inside the main window
 bool Saucer::move()
 {
     if (direction == East)
     {
         setPosition(sf::Vector2f(getPosition().x + SaucerSpeed, getPosition().y));
-        if (getPosition().x > static_cast<float>(MainWindowWidth))
-            return false;
+        if (getPosition().x < static_cast<float>(MainWindowWidth))
+            return true;
     }
     else
     {
         setPosition(sf::Vector2f(getPosition().x - SaucerSpeed, getPosition().y));
-        if (getPosition().x < 0.0f)
-            return false;
+        if (getPosition().x > 0.0f)
+            return true;
     }
-    return true;
+    return false;
 }
 
 bool Saucer::hitByBullet(const Bullet& bullet) const

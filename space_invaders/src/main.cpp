@@ -10,6 +10,7 @@
 
 #include "Proto.h"
 #include "Constants.h"
+#include "Sound.h"
 
 using std::cerr;
 using std::cout;
@@ -40,8 +41,8 @@ int main()
     Invaders invaders;
 
     sf::Texture gunTexture(GunImageFile);
-    Gun** guns = new Gun*[numGuns];
-    for (auto i = 0; i < numGuns; i++) guns[i] = new Gun(gunTexture);
+    Gun* guns = new Gun[numGuns] { gunTexture, gunTexture, gunTexture };
+    //for (auto i = 0; i < numGuns; i++) guns[i] = new Gun(gunTexture);
 
     sf::Texture explosionTexture(ExplosionImageFile);
     Explosion explosion(explosionTexture);
@@ -57,45 +58,7 @@ int main()
     Shield shields[3];
 
     //////////// Sound effects /////////////
-    sf::SoundBuffer invaderBuffer;
-    if (!invaderBuffer.loadFromFile(InvadersSoundFile))
-        cerr << "Unable to load " << InvadersSoundFile << endl;
-    sf::Sound invaderSound(invaderBuffer);
-
-    sf::SoundBuffer bulletBuffer;
-    if (!bulletBuffer.loadFromFile(BulletSoundFile))
-        cerr << "Unable to load " << BulletSoundFile << endl;
-    sf::Sound bulletSound(bulletBuffer);
-    bulletSound.setVolume(25.0f);
-    ;
-    sf::SoundBuffer explosionBuffer;
-    if (!explosionBuffer.loadFromFile(ExplosionSoundFile))
-        cerr << "Unable to load " << ExplosionSoundFile << endl;
-    sf::Sound explosionSound(explosionBuffer);
-    explosionSound.setVolume(80.0f);
-
-    sf::SoundBuffer saucerBuffer;
-    if (!saucerBuffer.loadFromFile(SaucerSoundFile))
-        cerr << "Unable to load " << SaucerSoundFile << endl;
-    sf::Sound saucerSound(saucerBuffer);
-    //saucerSound.setLoop(true);
-    saucerSound.setVolume(10.0f);
-
-    sf::SoundBuffer bombBuffer;
-    if (!bombBuffer.loadFromFile(BombSoundFile))
-        cerr << "Unable to load " << BombSoundFile << endl;
-    sf::Sound bombSound(bombBuffer);
-    bombSound.setVolume(8.0f);
-
-    sf::SoundBuffer bombExplosionBuffer;
-    if (!bombExplosionBuffer.loadFromFile(BombExplosionSoundFile))
-        cerr << "Unable to load " << BombExplosionSoundFile << endl;
-    sf::Sound bombExplosionSound(bombExplosionBuffer);
-
-    sf::SoundBuffer applauseBuffer;
-    if (!applauseBuffer.loadFromFile(ApplauseSoundFile))
-        cerr << "Unable to load " << ApplauseSoundFile << endl;
-    sf::Sound applauseSound(applauseBuffer);
+    Sound sound;
 
     // Declare and load a font
     sf::Font font;
@@ -118,8 +81,8 @@ int main()
     sf::Clock clock;
 
     // Move the second and third gun to spare location
-    guns[1]->moveToPosition(sf::Vector2f(760.0f+75.0f,30.0f));
-    guns[2]->moveToPosition(sf::Vector2f(760.0f+150.0f,30.0f));
+    guns[1].moveToPosition(sf::Vector2f(760.0f+75.0f,30.0f));
+    guns[2].moveToPosition(sf::Vector2f(760.0f+150.0f,30.0f));
 
     std::string name = welcome(window, highScores, invaders, saucerTexture, bombTexture, gunTexture);
     window.setTitle(sf::String(name + "\'s Space Invaders"));
@@ -142,23 +105,30 @@ int main()
                 {
                     if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
                     {
-                        stopSound(saucerSound);
+                        sound.stop("Saucer");
                         pauseFlag = !pauseFlag;
                     }
-                    if (keyPressed->scancode == sf::Keyboard::Scancode::Q)
+                    else if (keyPressed->scancode == sf::Keyboard::Scancode::Q)
                         gameOver = true;
-                    if (keyPressed->scancode == sf::Keyboard::Scancode::Right)
-                        guns[0]->move(Gun::Right);
-                    if (keyPressed->scancode == sf::Keyboard::Scancode::Left)
-                        guns[0]->move(Gun::Left);
-                    if (keyPressed->scancode == sf::Keyboard::Scancode::Space)
+                    // Move the gun left or right
+                    else if (keyPressed->scancode == sf::Keyboard::Scancode::Right)
+                    {
+                        guns[0].move(Gun::Right);
+                        break;
+                    }
+                    else if (keyPressed->scancode == sf::Keyboard::Scancode::Left)
+                    {
+                        guns[0].move(Gun::Left);
+                        break;
+                    }
+                    else if (keyPressed->scancode == sf::Keyboard::Scancode::Space)
                     {
                         // Limit the number of bullets that can be fired at one time
                         if (bulletsInFlight.size() < 2)
                         {
-                            bulletsInFlight.push_back(guns[0]->shoot());
+                            bulletsInFlight.push_back(guns[0].shoot());
                             score += -1;                                   // subtract one point for each bullet
-                            startSound(bulletSound);
+                            sound.start("Bullet");
                         }
                     }
                 }
@@ -168,7 +138,7 @@ int main()
                 // Drop a bomb at a random interval if no bomb is active
                 if (rand() % BombFrequency == 0 && bombPtr == nullptr)
                 {
-                    startSound(bombSound);
+                    sound.start("Bomb");
                     // Every other bomb is a "targeted bomb"
                     if (rand()%2)
                     {
@@ -177,15 +147,15 @@ int main()
                     }
                     else  // drop a targeted bomb
                     {
-                        bombPtr = new Bomb(bombTexture, guns[0]->getPosition().x);
+                        bombPtr = new Bomb(bombTexture, guns[0].getPosition().x);
                         bombPtr->bottomPosition();
                     }
                 }
                 if (rand()%SaucerFrequency == 0 && saucerPtr == nullptr)    // saucer frequency = 1/8000
                 {
                     saucerPtr = new Saucer(saucerTexture);
-                    stopSound(invaderSound);
-                    startSound(saucerSound);
+                    sound.stop("Invaders");
+                    sound.start("Saucer");
                 }
 
                 deltaTime = clock.restart().asSeconds();
@@ -199,7 +169,6 @@ int main()
                     if (invaders.getPositionOfBottomVisibleInvader() >= ShieldYPosition)
                     {
                         gameOver = true;
-                        //break;
                     }
                 }
 
@@ -208,8 +177,8 @@ int main()
                 {
                     if (!saucerPtr->move())
                     {
-                        stopSound(saucerSound);
-                        startSound(invaderSound);
+                        sound.stop("Saucer");
+                        sound.start("Invaders");
                         delete saucerPtr;
                         saucerPtr = nullptr;
                     }
@@ -220,22 +189,24 @@ int main()
                 {
                     if (!bombPtr->move())
                     {
-                        stopSound(bombSound);
-                        startSound(invaderSound);
+                        sound.stop("Bomb");
+                        sound.start("Invaders");
+
+                        //startSound(invaderSound);
                         delete bombPtr;
                         bombPtr = nullptr;
                     }
                     else
                     {
                         /// Bomb hits gun?
-                        if (guns[0]->hitByBomb(*bombPtr))   // gun hit by bomb?
+                        if (guns[0].hitByBomb(*bombPtr))   // gun hit by bomb?
                         {
-                            stopSound(bombSound);
-                            startSound(bombExplosionSound);
+                            sound.stop("Bomb");
+                            sound.start("BombExplosion");
 
                             delete bombPtr;
                             bombPtr = nullptr;
-                            explosion.startExplosion(guns[0]->getPosition());
+                            explosion.startExplosion(guns[0].getPosition());
                             if (gunInPlay == 2)
                                 gameOver = true;
                         }
@@ -252,7 +223,7 @@ int main()
 
                                     if (shields[i].hitByBomb(shieldPositionToExamine))
                                     {
-                                        startSound(explosionSound);
+                                        sound.start("Explosion");
                                         // Get rid of the bomb
                                         delete bombPtr;
                                         bombPtr = nullptr;
@@ -305,7 +276,7 @@ int main()
                     if (invaderHit)
                     {
                         score += invaderHit;
-                        startSound(explosionSound);
+                        sound.start("Explosion");
                         delete (*it);
                         *it = nullptr;
                         bulletsInFlight.erase(it);
@@ -326,8 +297,8 @@ int main()
                         score += 20;  // 20 points for hitting a bomb
                         //stopSound(bombSound);
                         //startSound(bombExplosionSound);
-                        stopSound(bombSound);
-                        startSound(bombExplosionSound);
+                        sound.stop("Bomb");
+                        sound.start("BombExplosion");
                         explosion.startExplosion(bombPtr->getPosition());
 
                         // remove bullet
@@ -344,8 +315,8 @@ int main()
                     else if (saucerPtr && saucerPtr->hitByBullet(**it))
                     {
                         score += 10;  // 10 points for hitting a saucer
-                        stopSound(saucerSound);
-                        startSound(bombExplosionSound);
+                        sound.stop("Saucer");
+                        sound.start("BombExplosion");
                         explosion.startExplosion(saucerPtr->getPosition());
 
                         // remove bullet
@@ -371,20 +342,22 @@ int main()
                     // explosion end
                     if (!explosion.isExploding())
                     {
-                        stopSound(explosionSound);
-                        startSound(invaderSound);
+                        sound.stop("Explosion");
+                        sound.start("Invaders");
+
+                        //startSound(invaderSound);
 
                         // is it a gun explosion
-                        if (fabs(explosion.getPosition().y - guns[0]->getPosition().y) < 20.0f)
+                        if (fabs(explosion.getPosition().y - guns[0].getPosition().y) < 20.0f)
                         {
                             if (gunInPlay == 2)
                             {
                                 gameOver = true;
                                 break;
                             }
-                            guns[2-gunInPlay]->setInvisible();
-                            guns[0]->setVisible();
-                            guns[0]->moveToPosition();
+                            guns[2-gunInPlay].setInvisible();
+                            guns[0].setVisible();
+                            guns[0].moveToPosition();
                             gunInPlay++;
                             sf::sleep(sf::Time(sf::seconds(2.0f)));
                         }
@@ -400,10 +373,10 @@ int main()
             if (gameOver)
             {
                 // stop sounds
-                stopSound(invaderSound);
-                stopSound(saucerSound);
-                stopSound(explosionSound);
-                startSound(applauseSound);
+                sound.stop("Invaders");
+                sound.stop("Saucer");
+                sound.stop("Explosion");
+                sound.start("Applause");
                 gameOverText.setString(sf::String("Game Over"));
 
                 displayWindowObjects(window, background, text, guns, invaders, explosion, bombPtr, saucerPtr, bulletsInFlight, gameOverText, shields);
@@ -417,8 +390,8 @@ int main()
     }  // while (window.isOpen())
     for (auto i = 0; i < numGuns; i++)
     {
-        delete guns[i];
-        guns[i] = nullptr;
+        delete [] guns;
+        guns = nullptr;
     }
     return 0;
 }

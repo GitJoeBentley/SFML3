@@ -4,10 +4,8 @@
 sf::Vector2f Gun::GunStartPosition(MainWindowWidth / 2.0f, 0.97f * MainWindowHeight);
 
 Gun::Gun(sf::Texture& texture)
-    : sf::Sprite(texture), gunSpeed(13.0f), visible(true)
+    : sf::Sprite(texture), visible(true)
 {
-    //texture.loadFromFile(GunImageFile);
-    //gun.setTexture(texture);
     setPosition(sf::Vector2f(MainWindowWidth / 2.0f, 0.96f * MainWindowHeight));
     setOrigin(sf::Vector2f(getLocalBounds().size.x/2.0f,getLocalBounds().size.y / 2.0f));
 }
@@ -23,13 +21,13 @@ void Gun::move(Direction dir)
     {
         // if the gun is on the right edge, disallow move
         if (getPosition().x < MainWindowWidth - size().x)
-            setPosition(sf::Vector2f(getPosition().x + gunSpeed, getPosition().y));
+            setPosition(sf::Vector2f(getPosition().x + GunSpeed, getPosition().y));
     }
     if (dir == Left)
     {
         // if the gun is on the left edge, disallow move
         if (getPosition().x > size().x)
-            setPosition(sf::Vector2f(getPosition().x - gunSpeed, getPosition().y));
+            setPosition(sf::Vector2f(getPosition().x - GunSpeed, getPosition().y));
     }
 }
 

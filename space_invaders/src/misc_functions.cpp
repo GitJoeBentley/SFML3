@@ -213,19 +213,7 @@ char getKey(const auto* keyPressed)
     return ' ';
 }
 
-void startSound(sf::Sound& sound)
-{
-    if (sound.getStatus() != sf::Sound::Status::Playing)
-        sound.play();
-}
-
-void stopSound(sf::Sound& sound)
-{
-    if (sound.getStatus() != sf::Sound::Status::Stopped)
-        sound.stop();
-}
-
-void displayWindowObjects(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, Gun** guns,
+void displayWindowObjects(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, Gun* guns,
                           Invaders& invaders, Explosion& explosion, Bomb* bombPtr, Saucer* saucerPtr,
                           std::list<Bullet*>& bulletsInFlight, sf::Text& gameOverText, Shield* shields)
 {
@@ -233,12 +221,12 @@ void displayWindowObjects(sf::RenderWindow& window, sf::RectangleShape& backgrou
     window.draw(background);
     window.draw(text);
     invaders.draw(window);
-    if (guns[0]->isVisible())
-        window.draw(guns[0]->getGun());
-    if (guns[1]->isVisible())
-        window.draw(guns[1]->getGun());
-    if (guns[2]->isVisible())
-        window.draw(guns[2]->getGun());
+    if (guns[0].isVisible())
+        window.draw(guns[0].getGun());
+    if (guns[1].isVisible())
+        window.draw(guns[1].getGun());
+    if (guns[2].isVisible())
+        window.draw(guns[2].getGun());
     if (explosion.isExploding())
         window.draw(explosion.getExplosion());
     if (bombPtr)

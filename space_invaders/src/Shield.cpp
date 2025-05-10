@@ -11,12 +11,12 @@ using std::cerr;
 using std::endl;
 
 Shield::Shield()
-    : shieldData(new uint64_t[ShieldSize.y]),
+    : shieldData(new uint64_t[ShieldHeight]),
       shieldImage(new sf::Image(ShieldSize)),
       shieldTexture(new sf::Texture()),
       shield(nullptr)
 {
-    static uint64_t* InitialShieldData = new uint64_t[ShieldSize.y];
+    static uint64_t InitialShieldData[ShieldHeight];
     static bool GotShieldData = false;
     static sf::Vector2f ShieldPosition = sf::Vector2f{0.0f, ShieldYPosition};
     ShieldPosition.x += MainWindowWidth / 4.0f;
@@ -25,7 +25,7 @@ Shield::Shield()
         getShieldDataFromFile(InitialShieldData);
         GotShieldData = true;
     }
-    memcpy(shieldData,InitialShieldData,ShieldSize.y * sizeof(uint64_t));
+    memcpy(shieldData,InitialShieldData,ShieldHeight * sizeof(uint64_t));
     // create the Shield image
     uint64_t mask;
     for (unsigned y = 0; y < 45; y++)
@@ -42,10 +42,9 @@ Shield::Shield()
     if (!shieldTexture->loadFromImage(*shieldImage))
         std::cerr << "Unable to load shield image into texture in function: Shield::Shield()" << std::endl;
     shield = new sf::Sprite(*shieldTexture);
-    //shield->setTexture(*shieldTexture);
     sf::FloatRect rect = shield->getLocalBounds();
     sf::Vector2f shieldSize = rect.size;
-    shield->setOrigin(sf::Vector2f(shieldSize.x/2.0f, shieldSize.y / 2.0f));
+    shield->setOrigin(sf::Vector2f(shieldSize.x/2.0f, ShieldHeight / 2.0f));
     shield->setPosition(ShieldPosition);
 }
 
@@ -154,7 +153,6 @@ bool Shield::hitByBomb(sf::Vector2f position)
     return itsAHit;
 }
 
-
 // Is the bullet aligned with the shield?
 bool Shield::isAlignedWithBullet(const Bullet& bullet) const
 {
@@ -229,4 +227,3 @@ bool Shield::hitByBullet(sf::Vector2f position)
     }
     return itsAHit;
 }
-
