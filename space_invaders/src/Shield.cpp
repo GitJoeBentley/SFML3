@@ -91,7 +91,7 @@ void Shield::getShieldDataFromFile(uint64_t* InitialShieldData)
 
 bool Shield::hitByBomb(sf::Vector2f position)
 {
-    bitset<64> bits;
+    std::bitset<64> bits;
     int minXpos = static_cast<int>(position.x - BombSize.x/2 - 1);
     minXpos = minXpos < 0 ? 0 : minXpos;
     int maxXpos = static_cast<int>(position.x + BombSize.x/2 + 1);
@@ -168,7 +168,7 @@ bool Shield::isAlignedWithBullet(const Bullet& bullet) const
 bool Shield::hitByBullet(sf::Vector2f position)
 {
     bool itsAHit = false;
-    bitset<64> bits;
+    std::bitset<64> bits;
     int minXpos = static_cast<int>(position.x - BulletRadius - 1);
     minXpos = minXpos < 0 ? 0 : minXpos;
     int maxXpos = static_cast<int>(position.x + BulletRadius + 1);

@@ -1,22 +1,22 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-
 #include "Proto.h"
 #include "Constants.h"
 #include "Gun.h"
 #include "Saucer.h"
+#include "Sound.h"
 
 using std::endl;
 using std::cerr;
 
 
 std::string welcome(sf::RenderWindow& window, const HighScores& highScores, Invaders& invaders,
-    const sf::Texture& saucerTexture, sf::Texture& bombTexture, sf::Texture& gunTexture)
+                    const sf::Texture& saucerTexture, sf::Texture& bombTexture, sf::Texture& gunTexture)
 {
     std::string text, buffer,name;
 
-       // Music
+    // Music
     sf::Music music;
     if (!music.openFromFile(OpeningMusicFile))
         cerr << "Unable to open " << OpeningMusicFile << endl;
@@ -241,4 +241,45 @@ void displayWindowObjects(sf::RenderWindow& window, sf::RectangleShape& backgrou
     window.draw(shields[1].getShield());
     window.draw(shields[2].getShield());
     window.display();
+}
+
+void pollEvent(sf::RenderWindow& window, Sound& sound, bool& pauseFlag, bool& gameOver, Gun*& guns, std::list<Bullet*>& bulletsInFlight, Score& score)
+{
+    while (const std::optional event = window.pollEvent())
+    {
+        // Close window: exit
+        if (event->is<sf::Event::Closed>())
+            window.close();
+        else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+        {
+            if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
+            {
+                sound.stop("Saucer");
+                pauseFlag = !pauseFlag;
+            }
+            else if (keyPressed->scancode == sf::Keyboard::Scancode::Q)
+                gameOver = true;
+            // Move the gun left or right
+            else if (keyPressed->scancode == sf::Keyboard::Scancode::Right)
+            {
+                guns[0].move(Gun::Right);
+                break;
+            }
+            else if (keyPressed->scancode == sf::Keyboard::Scancode::Left)
+            {
+                guns[0].move(Gun::Left);
+                break;
+            }
+            else if (keyPressed->scancode == sf::Keyboard::Scancode::Space)
+            {
+                // Limit the number of bullets that can be fired at one time
+                if (bulletsInFlight.size() < 2)
+                {
+                    bulletsInFlight.push_back(guns[0].shoot());
+                    score += -1;                                   // subtract one point for each bullet
+                    sound.start("Bullet");
+                }
+            }
+        }
+    }
 }

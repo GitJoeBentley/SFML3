@@ -23,9 +23,9 @@ int main()
     bool gameOver = false;
     bool bulletHitsShield = false;
     int invaderHit = 0;
-    Score score;
     int gunInPlay = 0;
     unsigned loopCount = 0;
+    Score score;
     HighScores highScores;
 
     srand(static_cast<unsigned>(time(0)));
@@ -42,7 +42,6 @@ int main()
 
     sf::Texture gunTexture(GunImageFile);
     Gun* guns = new Gun[numGuns] { gunTexture, gunTexture, gunTexture };
-    //for (auto i = 0; i < numGuns; i++) guns[i] = new Gun(gunTexture);
 
     sf::Texture explosionTexture(ExplosionImageFile);
     Explosion explosion(explosionTexture);
@@ -96,43 +95,8 @@ int main()
     {
         while (gunInPlay < numGuns && !gameOver)
         {
-            while (const std::optional event = window.pollEvent())
-            {
-                // Close window: exit
-                if (event->is<sf::Event::Closed>())
-                    window.close();
-                else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-                {
-                    if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
-                    {
-                        sound.stop("Saucer");
-                        pauseFlag = !pauseFlag;
-                    }
-                    else if (keyPressed->scancode == sf::Keyboard::Scancode::Q)
-                        gameOver = true;
-                    // Move the gun left or right
-                    else if (keyPressed->scancode == sf::Keyboard::Scancode::Right)
-                    {
-                        guns[0].move(Gun::Right);
-                        break;
-                    }
-                    else if (keyPressed->scancode == sf::Keyboard::Scancode::Left)
-                    {
-                        guns[0].move(Gun::Left);
-                        break;
-                    }
-                    else if (keyPressed->scancode == sf::Keyboard::Scancode::Space)
-                    {
-                        // Limit the number of bullets that can be fired at one time
-                        if (bulletsInFlight.size() < 2)
-                        {
-                            bulletsInFlight.push_back(guns[0].shoot());
-                            score += -1;                                   // subtract one point for each bullet
-                            sound.start("Bullet");
-                        }
-                    }
-                }
-            }
+            pollEvent(window, sound, pauseFlag, gameOver, guns, bulletsInFlight, score);
+
             if (!pauseFlag)
             {
                 // Drop a bomb at a random interval if no bomb is active
@@ -184,58 +148,16 @@ int main()
                     }
                 }
 
-                // Move the bomb
+                // Manage the bomb
                 if (bombPtr)
                 {
-                    if (!bombPtr->move())
+                    if (!bombPtr->manage(sound, guns[0], explosion, gunInPlay, gameOver, shields))
                     {
-                        sound.stop("Bomb");
-                        sound.start("Invaders");
-
-                        //startSound(invaderSound);
                         delete bombPtr;
                         bombPtr = nullptr;
                     }
-                    else
-                    {
-                        /// Bomb hits gun?
-                        if (guns[0].hitByBomb(*bombPtr))   // gun hit by bomb?
-                        {
-                            sound.stop("Bomb");
-                            sound.start("BombExplosion");
-
-                            delete bombPtr;
-                            bombPtr = nullptr;
-                            explosion.startExplosion(guns[0].getPosition());
-                            if (gunInPlay == 2)
-                                gameOver = true;
-                        }
-                        /// Bomb hits shield
-                        else if (bombPtr && bombPtr->bottomPosition() >= 0.9f * MainWindowHeight - ShieldSize.y / 2.0f)
-                        {
-                            bombNosePos = bombPtr->nosePosition();
-                            for (int i = 0; i < 3; ++i)
-                            {
-                                shieldPos = shields[i].getShield().getPosition();
-                                if (shields[i].isAlignedWithBomb(*bombPtr) && bombPtr->bottomPosition() > shields[i].topOfShield() - 10.f)
-                                {
-                                    sf::Vector2f shieldPositionToExamine = sf::Vector2f(32 + (bombNosePos.x-shieldPos.x),22.5f - (shieldPos.y - bombNosePos.y));
-
-                                    if (shields[i].hitByBomb(shieldPositionToExamine))
-                                    {
-                                        sound.start("Explosion");
-                                        // Get rid of the bomb
-                                        delete bombPtr;
-                                        bombPtr = nullptr;
-                                        break;
-                                    }
-                                    else
-                                        break;
-                                }
-                            }
-                        }
-                    }
                 }
+
                 // move and display the bullets in flight
                 for (auto it = bulletsInFlight.begin(); it!= bulletsInFlight.end(); ++it)
                 {
@@ -295,8 +217,6 @@ int main()
                     if (bombPtr && bombPtr->hitByBullet(**it))
                     {
                         score += 20;  // 20 points for hitting a bomb
-                        //stopSound(bombSound);
-                        //startSound(bombExplosionSound);
                         sound.stop("Bomb");
                         sound.start("BombExplosion");
                         explosion.startExplosion(bombPtr->getPosition());
@@ -395,4 +315,3 @@ int main()
     }
     return 0;
 }
-

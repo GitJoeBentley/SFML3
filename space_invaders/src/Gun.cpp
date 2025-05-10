@@ -1,5 +1,6 @@
 #include <cmath>
 #include "Gun.h"
+#include "Bomb.h"
 
 sf::Vector2f Gun::GunStartPosition(MainWindowWidth / 2.0f, 0.97f * MainWindowHeight);
 

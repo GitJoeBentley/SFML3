@@ -2,7 +2,9 @@
 #include <cstdlib>
 #include <cmath>
 #include "Bomb.h"
-#include "Constants.h"
+#include "Sound.h"
+#include "Shield.h"
+#include "constants.h"
 
 using std::cout;
 using std::cerr;
@@ -12,8 +14,6 @@ using std::endl;
 Bomb::Bomb(sf::Texture& texture, int index)
     : sf::Sprite(texture), imageIndex(index<3?index:rand()%3)
 {
-    //texture.loadFromFile(BombImageFile);
-    //setTexture(texture);
     setOrigin(sf::Vector2f(getLocalBounds().size.x/2.0f,getLocalBounds().size.y / 2.0f));
     sf::IntRect bombImageLocationInTexture;
     bombImageLocationInTexture.size.y = static_cast<int>(BombSize.y);
@@ -109,4 +109,50 @@ float Bomb::leftSidePosition() const
 float Bomb::rightSidePosition() const
 {
     return position.x + BombSize.x / 4.0f;
+}
+
+// Return false if the bomb:
+//   moves below the shield
+//   hits the shield
+//   if hits the gun
+bool Bomb::manage(Sound& sound, Gun& gun, Explosion& explosion, int& gunInPlay, bool& gameOver, Shield* shields)
+{
+    if (!move())
+    {
+        sound.stop("Bomb");
+        sound.start("Invaders");
+        return false;
+    }
+    else
+    {
+        /// Bomb hits gun?
+        if (gun.hitByBomb(*this))   // gun hit by bomb?
+        {
+            sound.stop("Bomb");
+            sound.start("BombExplosion");
+            explosion.startExplosion(gun.getPosition());
+            if (gunInPlay == 2) gameOver = true;
+            return false;
+        }
+        /// Bomb hits shield
+        else if (bottomPosition() >= 0.9f * MainWindowHeight - ShieldHeight / 2.0f)
+        {
+            sf::Vector2f shieldPos;
+            for (int i = 0; i < 3; ++i)
+            {
+                shieldPos = shields[i].getShield().getPosition();
+                if (shields[i].isAlignedWithBomb(*this) && bottomPosition() > shields[i].topOfShield() - 10.f)
+                {
+                    sf::Vector2f shieldPositionToExamine = sf::Vector2f(32 + (nosePosition().x - shieldPos.x),22.5f - (shieldPos.y - nosePosition().y));
+
+                    if (shields[i].hitByBomb(shieldPositionToExamine))
+                    {
+                        sound.start("Explosion");
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+    return true;
 }
