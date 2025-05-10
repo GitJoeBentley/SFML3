@@ -22,7 +22,7 @@ std::string getWelcomeText();
 char getKey(const auto* keyPressed);
 void startSound(sf::Sound& sound);
 void stopSound(sf::Sound& sound);
-void displayWindowObjects(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, Gun** guns, Invaders& invaders, Explosion& explosion, Bomb* bombPtr, Saucer* saucerPtr, std::list<Bullet*>& bulletsInFlight, sf::Text& gameOverText, Shield* shield);
+void displayWindowObjects(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, Gun* guns, Invaders& invaders, Explosion& explosion, Bomb* bombPtr, Saucer* saucerPtr, std::list<Bullet*>& bulletsInFlight, sf::Text& gameOverText, Shield* shield);
 
 
 #endif // PROTO_H_INCLUDED

@@ -19,10 +19,6 @@ public:
     {
         return *this;
     }
-    /*sf::Vector2f getPosition() const
-    {
-        return position;
-    }*/
     void move(Direction dir);
     void moveToStartPosition();
     sf::Vector2f size() const
@@ -37,10 +33,6 @@ public:
     void moveToPosition(sf::Vector2f pos = sf::Vector2f(GunStartPosition));
 
 private:
-    //sf::Sprite gun;
-    //sf::Texture texture;
-    //sf::Vector2f position;
-    float gunSpeed;
     bool visible;
 };
 

@@ -8,13 +8,17 @@ const unsigned MainWindowHeight = 800;
 const int numGuns = 3;
 const float SwitchTime = .2f;
 const float BulletRadius = 2.0f;
+
 const float BulletSpeed = 0.06f;
-const int BombFrequency = 10000;
-const float BombSpeed = 0.025f;
+const float BombSpeed = 0.0225f;
 const float SaucerSpeed = 0.01f;
-const int SaucerFrequency = 9000;
+const float GunSpeed = 15.f;
+
+const int BombFrequency = 15000;
+const int SaucerFrequency = 20000;
 const sf::Vector2f InvaderSize{32.0f,32.0f};
 const sf::Vector2u ShieldSize(64u, 45u);
+const unsigned ShieldHeight = 45u;;
 const float ShieldYPosition = 0.9f * MainWindowHeight;
 const sf::Color GreenPixel(0,255,0,255);
 const sf::Color TransparentPixel(0,0,0,255);
@@ -31,7 +35,6 @@ const std::string ExplosionImageFile = ResourcePath + "explosion.png";
 const std::string ShieldDataFile {ResourcePath + "shield_data.txt"};
 
 // Sound files
-
 const std::string InvadersSoundFile = ResourcePath + "frogs.wav";
 const std::string BulletSoundFile = ResourcePath + "bullet.wav";
 const std::string ExplosionSoundFile = ResourcePath + "explosion.wav";
