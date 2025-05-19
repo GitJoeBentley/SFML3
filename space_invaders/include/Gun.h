@@ -21,7 +21,7 @@ public:
     {
         return *this;
     }
-    void move(Direction dir);
+    void move(Direction dir, float speed = GunSpeed);
     void moveToStartPosition();
     sf::Vector2f size() const
     {
