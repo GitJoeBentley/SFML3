@@ -15,7 +15,6 @@
 using std::cerr;
 using std::cout;
 using std::endl;
-using std::string;
 
 int main()
 {
@@ -27,7 +26,6 @@ int main()
     Control control;
     int gunInPlay = 0;
     unsigned loopCount = 0;
-    string statement;
     Score score;
     HighScores highScores;
 
@@ -75,8 +73,9 @@ int main()
     text.setFillColor(sf::Color(10,250,50));
     text.setPosition(sf::Vector2f(80.0f,20.0f));
 
-    sf::Text gameOverText(font, "", 48);
-    gameOverText.setFillColor(sf::Color(0xff0000ff));
+    sf::Text gameOverText(font, "", 32);
+    gameOverText.setFillColor(sf::Color(210,250,20));
+    gameOverText.setPosition(sf::Vector2f(412.0f,550.0f));
 
     // Game Speed controls
     float deltaTime = .2f;
@@ -88,9 +87,8 @@ int main()
     guns[2].moveToPosition(sf::Vector2f(760.0f+150.0f,30.0f));
 
     control = start(window, highScores, invaders, saucerTexture, bombTexture, gunTexture);
+    //cout << "Control is " << (int) control << endl;
     invaders.moveInvadersToStartPosition();
-
-    ///////////////////////////// Game Loop /////////////////////////////////
 
     while (window.isOpen())
     {
@@ -101,13 +99,12 @@ int main()
             if (!pauseFlag)
             {
                 // Drop a bomb at a random interval if no bomb is active
-                int rnd = rand() % 4;
-
-                if (rnd == 3 && rand() % BombFrequency == 0 && bombPtr == nullptr)
+                if (rand() % BombFrequency == 0 && bombPtr == nullptr)
                 {
                     sound.start("Bomb");
                     // Every other bomb is a "targeted bomb"
-                    if (rnd < 2)
+                    int rnd = rand() % 2;
+                    if (rnd == 1)
                     {
                         bombPtr = new Bomb(bombTexture);
                         bombPtr -> moveBombToStartPosition(invaders);
@@ -160,77 +157,65 @@ int main()
                         bombPtr = nullptr;
                     }
                 }
+
                 // Manage bullets in flight
                 manageBullets(bulletsInFlight, shields, invaders,sound, explosion, score, bombPtr, gameOver, saucerPtr, window);
 
-            }
-            // check for explosion
-            if (explosion.isExploding())
-            {
-                explosion.update();
-                if (!explosion.isExploding())
+                // check for explosion
+                if (explosion.isExploding())
                 {
-                    sound.stop("Explosion");
-                    sound.start("Invaders");
-
-                    // is it a gun explosion
-                    if (fabs(explosion.getPosition().y - guns[0].getPosition().y) < 20.0f)
+                    explosion.update();
+                    // explosion end
+                    if (!explosion.isExploding())
                     {
-                        if (gunInPlay == 2)
+                        sound.stop("Explosion");
+                        sound.start("Invaders");
+
+                        // is it a gun explosion
+                        if (fabs(explosion.getPosition().y - guns[0].getPosition().y) < 20.0f)
                         {
-                            gameOver = true;
-                            break;
+                            if (gunInPlay == 2)
+                            {
+                                gameOver = true;
+                                break;
+                            }
+                            guns[2-gunInPlay].setInvisible();
+                            guns[0].setVisible();
+                            guns[0].moveToPosition();
+                            gunInPlay++;
                         }
-                        guns[2-gunInPlay].setInvisible();
-                        guns[0].setVisible();
-                        guns[0].moveToPosition();
-                        gunInPlay++;
                         sf::sleep(sf::Time(sf::seconds(1.0f)));
                     }
-                    sf::sleep(sf::Time(sf::seconds(0.2f)));
                 }
             }
+
             invaders.updateStatus();
 
             text.setString(sf::String("Score ")+std::to_string(score)+ std::string(66,' ') +"Lives");
-            drawGameObjects(window, background, text, guns, invaders, explosion, bombPtr, saucerPtr, bulletsInFlight, gameOverText, shields);
+            displayWindowObjects(window, background, text, guns, invaders, explosion, bombPtr, saucerPtr, bulletsInFlight, gameOverText, shields);
             loopCount++;
-            if (gameOver && score > 0)
+            if (gameOver)
             {
                 // stop sounds
                 sound.stop("Invaders");
                 sound.stop("Saucer");
                 sound.stop("Explosion");
                 sound.start("Applause");
-                if (highScores.eligible(score))
-                {
-                    if (score > highScores.getHightestScore())
-                        statement += "         Congratulations!!!\nYou have the highest score!!!";
-                    else statement += "        Congratulations!!!\nYou made the leader board";
-                }
-                else statement = "Game Over";
+                gameOverText.setString(sf::String("Game Over"));
 
-                gameOverText.setString(statement);
-                sf::FloatRect textRect = gameOverText.getLocalBounds();
-                gameOverText.setOrigin(sf::Vector2f(textRect.size.x / 2.0f, textRect.size.y / 2.0f));
-                gameOverText.setPosition(sf::Vector2f(MainWindowWidth/2.0f, MainWindowHeight/2.0f));
-                std::string name = getName(window, background, text, font, guns, invaders, shields, gameOverText);
-                highScores.updateHighScores(Score(name,score,time(0)));
-                highScores.WriteHighScoresFile();
+                displayWindowObjects(window, background, text, guns, invaders, explosion, bombPtr, saucerPtr, bulletsInFlight, gameOverText, shields);
 
-                displayGameOver(window, background, text, guns, invaders, shields, gameOverText);
-
-                //sf::sleep(sf::Time(sf::seconds(1.0f)));   // stall
-                break;
+                //highScores.updateHighScores(Score(name.c_str(),score,time(0)));
+                //highScores.WriteHighScoresFile();
+                sf::sleep(sf::Time(sf::seconds(5.0f)));   // stall
+                window.close();
             }
         }                   // while (gunInPlay < numGuns)
-        if (gameOver) break;
-    }
+    }                       // while (window.isOpen())
     for (auto i = 0; i < numGuns; i++)
     {
         delete [] guns;
         guns = nullptr;
     }
-    window.close();
     return 0;
 }

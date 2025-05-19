@@ -1,7 +1,6 @@
 // #define _CRT_SECURE_NO_WARNINGS
 
 #include "HighScores.h"
-#include "constants.h"
 #include <string>
 #include <cstring>
 #include <fstream>
@@ -10,13 +9,13 @@
 #include <ctime>
 
 
-Score::Score(std::string n, int sc, time_t t)
+Score::Score(const char* n, int sc, time_t t)
     : score(sc), date(t)
 {
 #ifdef _MSC_VER                         // for MSVS 2017
 	strcpy_s(name, sizeof name, n);
 #else
-    std::strcpy(name,n.c_str());
+    std::strcpy(name,n);
 #endif
 }
 
@@ -57,13 +56,15 @@ std::ostream& operator<<(std::ostream& out, const Score& obj)
 
 ////////////////  HighScores functions ////////////////////
 
+std::string HighScores::HighScoresFilename = "highscores.bin";
+
 HighScores::HighScores()
 : highScores(), highScoresFileExists(true)
 {
-    std::ifstream fin(HighScoresFile);
+    std::ifstream fin(HighScoresFilename,std::ios_base::binary);
     if (!fin)
     {
-        std::cout << "Can't find high scores file, " << HighScoresFile << ".  I'll create a new one." << std::endl;
+        std::cout << "Can't find high scores file, " << HighScoresFilename << ".  I'll create a new one." << std::endl;
         highScoresFileExists = false;
     }
     else
@@ -89,7 +90,7 @@ void HighScores::updateHighScores(const Score& obj)
 
 void HighScores::WriteHighScoresFile()
 {
-    std::ofstream fout(HighScoresFile,std::ios_base::binary);
+    std::ofstream fout(HighScoresFilename,std::ios_base::binary);
 
     auto count = 0;
     for (auto it = highScores.cbegin(); it != highScores.cend(); ++it, ++count )
@@ -120,18 +121,4 @@ std::ostream& operator<<(std::ostream& out, const HighScores& scores)
         }
     }
     return out;
-}
-
-bool HighScores::eligible(int score)
-{
-    //Score is eligible for high scores if less than 10 scores on the list or score is  the lowest score on the list
-    if (highScores.size() < 10) return true;
-    if (score > *highScores.crbegin()) return true;
-    return false;
-}
-
-int HighScores::getHightestScore() const
-{
-    if (highScores.size() == 0) return 0;
-    return *highScores.cbegin();
 }
