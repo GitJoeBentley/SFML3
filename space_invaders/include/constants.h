@@ -8,7 +8,8 @@ const unsigned MainWindowHeight = 800;
 const int numGuns = 3;
 const float SwitchTime = .2f;
 const float BulletRadius = 2.0f;
-const float BulletSpeed = 0.1f;
+
+const float BulletSpeed = 0.06f;
 const float BombSpeed = 0.0225f;
 const float SaucerSpeed = 0.01f;
 const float InvaderSpeed = 3.0f;
@@ -35,7 +36,6 @@ const std::string BombImageFile = ResourcePath + "bombs.png";
 const std::string SaucerImageFile = ResourcePath + "saucer.png";
 const std::string ExplosionImageFile = ResourcePath + "explosion.png";
 const std::string ShieldDataFile {ResourcePath + "shield_data.txt"};
-const std::string HighScoresFile{ResourcePath + "highscores.bin"};
 
 // Sound files
 const std::string InvadersSoundFile = ResourcePath + "frogs.wav";
@@ -49,6 +49,7 @@ const std::string OpeningMusicFile = ResourcePath + "Also_Sprach_Zarathustra.ogg
 
 // Font files
 const std::string ArielFontFile = ResourcePath + "arial.ttf";
+//const std::string CourierNewFontFile = ResourcePath + "CourierNew.ttf";
 const std::string CourierNewFontFile = ResourcePath + "courbd.ttf";
 
 // Text Files
