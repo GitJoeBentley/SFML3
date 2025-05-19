@@ -87,7 +87,7 @@ bool Bomb::hitByBullet(Bullet& bullet)
         return false;
     float diffX = fabs(position.x - bullet.getPosition().x);
     float diffY = fabs(position.y - bullet.getPosition().y);
-    hit = std::sqrt(diffX * diffX + diffY * diffY) < (BombSize.x / 2.0f + 1.0f);
+    hit = diffX < 5.0f && diffY < 5.0f;
     return hit;
 }
 

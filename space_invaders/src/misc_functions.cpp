@@ -8,13 +8,15 @@
 #include "Sound.h"
 
 using std::endl;
+using std::cout;
 using std::cerr;
 
 
-std::string welcome(sf::RenderWindow& window, const HighScores& highScores, Invaders& invaders,
-                    const sf::Texture& saucerTexture, sf::Texture& bombTexture, sf::Texture& gunTexture)
+Control start(sf::RenderWindow& window, const HighScores& highScores, Invaders& invaders,
+              const sf::Texture& saucerTexture, sf::Texture& bombTexture, sf::Texture& gunTexture)
 {
-    std::string text, buffer,name;
+    std::string text, buffer;
+    Control control = Control::Keyboard;
 
     // Music
     sf::Music music;
@@ -29,45 +31,54 @@ std::string welcome(sf::RenderWindow& window, const HighScores& highScores, Inva
     {
         std::cout << "Can't find font" << std::endl;
     }
-    text = getWelcomeText();
+
+    std::ifstream fin(StartFile);
+    if (!fin)
+    {
+        std::cout << "Cannot open welcome file." << std::endl;
+        return control;
+    }
+
+    while (getline(fin, buffer))
+    {
+        text += buffer += '\n';
+    }
+
     sf::Text instructions(font, text, 20);
-    instructions.setFillColor(sf::Color::Cyan);
+    instructions.setFillColor(sf::Color::White);
     instructions.setPosition(sf::Vector2f(90.0f,20.0f));
 
     // Create High Scores text
     sf::Text highScoresText(font, "", 20);
-    highScoresText.setFillColor(sf::Color::Green);
-    highScoresText.setPosition(sf::Vector2f(480.0f,210.0f));
+    highScoresText.setFillColor(sf::Color::Yellow);
+    highScoresText.setPosition(sf::Vector2f(480.0f,120.0f));
 
     // Write High Scores
     std::ostringstream sout;
     sout << highScores << std::endl;
     highScoresText.setString(sout.str());
 
-    char input = ' ';
-
     // Create and position a gun
     Gun gun(gunTexture);
-    gun.moveToPosition(sf::Vector2f(56.0f,264.0f));
+    gun.moveToPosition(sf::Vector2f(56.0f,191.0f));
 
     // Position 5 invaders
     for (auto i = 0; i < 5; i++)
     {
-        invaders.getInvader(i,0).setPosition(sf::Vector2f(55.0f,313.0f + i * 45.0f));
+        invaders.getInvader(i,0).setPosition(sf::Vector2f(55.0f,241.0f + i * 45.0f));
     }
 
     // create and position a saucer
     Saucer* saucerPtr = new Saucer(saucerTexture);
-    saucerPtr->setPosition(sf::Vector2f(50.0f,544.0f));
+    saucerPtr->setPosition(sf::Vector2f(50.0f,471.0f));
 
     // create and position 3 bombs
-    //Bomb bomb[3] = {{bombTexture,0}, {bombTexture,1},{bombTexture,2}};
     Bomb* bomb[3];
 
     for (auto i = 0; i < 3; i++)
     {
         bomb[i] = new Bomb(bombTexture, i);
-        bomb[i]->setPosition(sf::Vector2f(40.0f+ i*16.0f, 610.0f));
+        bomb[i]->setPosition(sf::Vector2f(40.0f+ i*16.0f, 543.0f));
     }
 
     while (window.isOpen())
@@ -77,23 +88,12 @@ std::string welcome(sf::RenderWindow& window, const HighScores& highScores, Inva
             // Close window: exit
             if (event->is<sf::Event::Closed>())
                 window.close();
-            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-            {
-                input = getKey(keyPressed);
-                if ((input >= 'a' && input <= 'z')||(input >= 'A' && input <= 'Z')||input == ' ')
-                {
-                    name += input;
-                }
-                if (input == '\b') // backspace
-                {
-                    name = "";
-                    text = getWelcomeText();
-                }
-            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Enter)) return Control::Keyboard;
+            if (sf::Joystick::isButtonPressed(0,0)) return Control::Joystick;
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) return Control::Mouse;
         }
 
         window.clear();
-        instructions.setString((text+name+'_').c_str());
         window.draw(instructions);
         window.draw(highScoresText);
 
@@ -110,27 +110,16 @@ std::string welcome(sf::RenderWindow& window, const HighScores& highScores, Inva
         }
 
         window.display();
-        if (isspace(name[0]))
-            name = name.substr(1);  // remove leading space from name
-        name[0] = toupper(name[0]);
-
-        if (input == '\n')
-        {
-            delete saucerPtr;
-            window.clear();
-            music.stop();
-            return name;
-        }
     }
     music.stop();
     delete saucerPtr;
     for (int i = 0; i < 3; i++) delete bomb[i];
-    return "";
+    return control;
 }
 
 std::string getWelcomeText()
 {
-    std::ifstream fin(WelcomeFile);
+    std::ifstream fin(StartFile);
     std::string text, buffer;
     if (!fin)
     {
@@ -143,7 +132,7 @@ std::string getWelcomeText()
         text += buffer += '\n';
     }
 
-    text += "\n          Please type your name and press Enter ===> ";
+    //text += "\n          Please type your name and press Enter ===> ";
 
     fin.close();
     return text;
@@ -213,7 +202,39 @@ char getKey(const auto* keyPressed)
     return ' ';
 }
 
-void displayWindowObjects(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, Gun* guns,
+void displayGameOver(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, Gun* guns, Invaders& invaders, Shield* shields, sf::Text& gameOverText)
+{
+    // create rectangle shape around text
+
+    static bool firstCall = true;
+
+    static sf::RectangleShape textBackground(gameOverText.getLocalBounds().size);
+    if (firstCall)
+    {
+        sf::FloatRect textRect = textBackground.getLocalBounds();
+        textBackground.setOrigin(sf::Vector2f(textRect.size.x / 2.0f, textRect.size.y / 2.0f));
+        textBackground.setPosition(gameOverText.getPosition());
+        textBackground.setFillColor(sf::Color(0x010101ab));
+        firstCall = false;
+    }
+
+    window.draw(background);
+    window.draw(text);
+    invaders.draw(window);
+    if (guns[0].isVisible())
+        window.draw(guns[0].getGun());
+    if (guns[1].isVisible())
+        window.draw(guns[1].getGun());
+    if (guns[2].isVisible())
+        window.draw(guns[2].getGun());
+    window.draw(shields[0].getShield());
+    window.draw(shields[1].getShield());
+    window.draw(shields[2].getShield());
+    window.draw(textBackground);
+    window.draw(gameOverText);
+}
+
+void drawGameObjects(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, Gun* guns,
                           Invaders& invaders, Explosion& explosion, Bomb* bombPtr, Saucer* saucerPtr,
                           std::list<Bullet*>& bulletsInFlight, sf::Text& gameOverText, Shield* shields)
 {
@@ -243,13 +264,59 @@ void displayWindowObjects(sf::RenderWindow& window, sf::RectangleShape& backgrou
     window.display();
 }
 
-void pollEvent(sf::RenderWindow& window, Sound& sound, bool& pauseFlag, bool& gameOver, Gun*& guns, std::list<Bullet*>& bulletsInFlight, Score& score)
+/////////// Handle keyboard, mouse, and joystick ////////////////////////
+void pollEvent(sf::RenderWindow& window, const Control& control, Sound& sound, bool& pauseFlag, bool& gameOver, Gun*& guns, std::list<Bullet*>& bulletsInFlight, Score& score)
 {
+    bool fire;
+    if (control == Control::Mouse)
+    {
+        sf::Vector2i currentMPos;
+        static sf::Vector2i lastMPos = sf::Vector2i(0,0);
+        static int minMouseX = static_cast<int>(ShieldSize.x / 2);
+        static int maxMouseX = static_cast<int>(MainWindowWidth - ShieldSize.x / 2);
+        currentMPos = sf::Mouse::getPosition(window);
+
+        if (currentMPos != lastMPos)
+        {
+            if (currentMPos.x < minMouseX)
+            {
+                sf::Mouse::setPosition(sf::Vector2i(minMouseX,sf::Mouse::getPosition(window).y), window);
+                currentMPos.x = minMouseX;
+            }
+            if (currentMPos.x > maxMouseX)
+            {
+                sf::Mouse::setPosition(sf::Vector2i(maxMouseX,sf::Mouse::getPosition(window).y), window);
+                currentMPos.x = maxMouseX;
+            }
+            guns[0].setPosition(sf::Vector2f(static_cast<float>(currentMPos.x), 0.96f * MainWindowHeight));
+            lastMPos = currentMPos;
+        }
+    }
+
     while (const std::optional event = window.pollEvent())
     {
+        fire = false;
+        if (sf::Joystick::isButtonPressed(0, 2) || sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Space))
+        {
+            fire = true;
+            break;
+        }
+
+        float joystickDirection = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X);
+
+        if (joystickDirection < -25.f)
+        {
+            guns[0].move(Gun::Left, GunSpeed / GunSpeed);
+            break;
+        }
+        if (joystickDirection > 25.f)
+        {
+            guns[0].move(Gun::Right, GunSpeed / GunSpeed);
+            break;
+        }
+
         // Close window: exit
-        if (event->is<sf::Event::Closed>())
-            window.close();
+        if (event->is<sf::Event::Closed>()) window.close();
         else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
         {
             if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
@@ -270,16 +337,167 @@ void pollEvent(sf::RenderWindow& window, Sound& sound, bool& pauseFlag, bool& ga
                 guns[0].move(Gun::Left);
                 break;
             }
-            else if (keyPressed->scancode == sf::Keyboard::Scancode::Space)
+        }
+    }
+
+    // Limit the number of bullets that can be fired at one time
+    if (fire && bulletsInFlight.size() < 1)
+    {
+        //cout << "List size before = " << bulletsInFlight.size() << endl;
+        bulletsInFlight.push_back(guns[0].shoot());
+        score += -1;                                   // subtract one point for each bullet
+        //cout << "List size after = " << bulletsInFlight.size() << endl;
+        sound.start("Bullet");
+        //sf::sleep(sf::Time(sf::seconds(0.13f)));
+    }
+}
+
+void manageBullets(std::list<Bullet*>& bulletsInFlight, Shield* shields, Invaders& invaders, Sound& sound, Explosion& explosion,
+                   Score& score, Bomb*& bombPtr, bool& gameOver, Saucer*& saucerPtr, sf::RenderWindow& window)
+{
+    //bool bulletHitsShield;
+    int invaderHit;
+    sf::Vector2f shieldPos;
+    sf::Vector2f bulletPos;
+    for (auto it = bulletsInFlight.begin(); it!= bulletsInFlight.end(); ++it)
+    {
+        // Bullet moved off the top of the window
+        if (!(*it)->move())
+        {
+            delete (*it);
+            *it = nullptr;
+            bulletsInFlight.erase(it);
+            return;
+        }
+        /// Bullet hits shield?
+        for (int i = 0; i < 3; ++i)
+        {
+            if (shields[i].isAlignedWithBullet(**it))
             {
-                // Limit the number of bullets that can be fired at one time
-                if (bulletsInFlight.size() < 2)
+                shieldPos = shields[i].getShield().getPosition();
+                bulletPos = (*it)->getPosition();
+                sf::Vector2f shieldPositionToExamine = sf::Vector2f(32 + (bulletPos.x-shieldPos.x),22.5f + (bulletPos.y - shieldPos.y));
+                if (shields[i].hitByBullet(shieldPositionToExamine))
                 {
-                    bulletsInFlight.push_back(guns[0].shoot());
-                    score += -1;                                   // subtract one point for each bullet
-                    sound.start("Bullet");
+                    // remove bullet
+                    delete (*it);
+                    *it = nullptr;
+                    bulletsInFlight.erase(it);
+                    //bulletHitsShield = true;
+                    return;
                 }
             }
         }
+
+        /// Bullet hits invader?
+        invaderHit = invaders.invaderHitByBullet(**it);
+        if (invaderHit)
+        {
+            score += invaderHit;
+            sound.start("Explosion");
+            //cout << "Invader hit by bullet " << reinterpret_cast<unsigned long long>(*it) << " size of vector = " << bulletsInFlight.size() << endl;
+            //delete (*it);
+            //*it = nullptr;
+            bulletsInFlight.erase(it);
+            //cout << " size of vector = " << bulletsInFlight.size() << endl;
+
+            if (invaders.getCountVisible() == 0)
+                gameOver = true;
+            // add a random invader, maybe
+            else if (!gameOver && invaders.getCountVisible() < 10 && rand() % 2  == 0)
+            {
+                invaders.addRandomInvader();
+            }
+            else {};
+            return;
+        }
+
+        /// Bullet hits bomb?
+        if (bombPtr && bombPtr->hitByBullet(**it))
+        {
+            score += 20;  // 20 points for hitting a bomb
+            sound.stop("Bomb");
+            sound.start("BombExplosion");
+            explosion.startExplosion(bombPtr->getPosition());
+
+            // remove bullet
+            delete (*it);
+            *it = nullptr;
+            bulletsInFlight.erase(it);
+
+            // remove the bomb
+            delete bombPtr;
+            bombPtr = nullptr;
+            return;
+        }
+        /// Bullet hits saucer?
+        else if (saucerPtr && saucerPtr->hitByBullet(**it))
+        {
+            score += 10;  // 10 points for hitting a saucer
+            sound.stop("Saucer");
+            sound.start("BombExplosion");
+            explosion.startExplosion(saucerPtr->getPosition());
+
+            // remove bullet
+            delete (*it);
+            *it = nullptr;
+            bulletsInFlight.erase(it);
+
+            // remove the saucer
+            delete saucerPtr;
+            saucerPtr = nullptr;
+            return;
+        }
+        else
+        {
+            window.draw(**it);
+        }
     }
 }
+
+std::string getName(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& gametext, sf::Font& font, Gun* guns, Invaders& invaders, Shield* shields, sf::Text& gameOverText)
+{
+    std::string name;
+    char input = ' ';
+    std::string text = "Enter your name for the High Scores Leaderboard ===> ";
+    sf::Text namePrompt(font, text, 24 );
+    namePrompt.setPosition(sf::Vector2f(window.getSize().x/10.0f, 0.75f * window.getSize().y));
+
+    while (window.isOpen())
+    {
+        while (const std::optional event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>()) window.close();
+            else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                input = getKey(keyPressed);
+                if ((input >= 'a' && input <= 'z')||(input >= 'A' && input <= 'Z')||input == ' ')
+                {
+                    name += input;
+                }
+                if (input == '\b') // backspace
+                {
+                    name = "";
+                    text = "Enter your name for the High Scores Leaderboard ===> ";
+                }
+                break;
+            }
+        }
+        window.clear();
+        displayGameOver(window, background, gametext, guns, invaders, shields, gameOverText);
+        namePrompt.setString((text + name+'_'));
+        window.draw(namePrompt);
+        window.display();
+        if (isspace(name[0]))
+            name = name.substr(1);  // remove leading space from name
+        name[0] = toupper(name[0]);
+
+        if (input == '\n')
+        {
+            window.clear();
+            return name;
+        }
+    }
+    return name;
+}
+

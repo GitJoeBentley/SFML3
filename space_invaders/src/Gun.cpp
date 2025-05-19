@@ -16,19 +16,19 @@ void Gun::moveToPosition(sf::Vector2f pos)
     setPosition(pos);
 }
 
-void Gun::move(Direction dir)
+void Gun::move(Direction dir, float speed)
 {
     if (dir == Right)
     {
         // if the gun is on the right edge, disallow move
         if (getPosition().x < MainWindowWidth - size().x)
-            setPosition(sf::Vector2f(getPosition().x + GunSpeed, getPosition().y));
+            setPosition(sf::Vector2f(getPosition().x + speed, getPosition().y));
     }
     if (dir == Left)
     {
         // if the gun is on the left edge, disallow move
         if (getPosition().x > size().x)
-            setPosition(sf::Vector2f(getPosition().x - GunSpeed, getPosition().y));
+            setPosition(sf::Vector2f(getPosition().x - speed, getPosition().y));
     }
 }
 

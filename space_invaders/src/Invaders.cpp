@@ -12,7 +12,7 @@ using std::endl;
 const sf::Vector2u Invaders::NumInvaders{5,12};
 
 Invaders::Invaders()
-    : direction(Right), speed(2.0f), countVisible(NumInvaders.x * NumInvaders.y)
+    : direction(Right), speed(InvaderSpeed), countVisible(NumInvaders.x * NumInvaders.y)
 {
     if (!InvaderTexture.loadFromFile(InvaderImageFile))
         cerr << "Unable to load file " << InvaderImageFile << endl;
@@ -90,7 +90,7 @@ bool Invaders::move()
             if (moveDownFlag)
             {
                 // move down 10 pixels
-                invaderCurrentPosition.y += 10.0f;
+                invaderCurrentPosition.y += 11.0f;
             }
             invader[row][col].setPosition(invaderCurrentPosition);
         }

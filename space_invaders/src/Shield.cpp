@@ -204,7 +204,8 @@ bool Shield::hitByBullet(sf::Vector2f position)
             bits |= shieldData[row];
             for (auto col = minXpos; col <= maxXpos; ++col)
             {
-                if (rand() % 8)
+                if (rand() % 4)
+                //if (rand() % 8)
                     bits.reset(col);
             }
             shieldData[row] = bits.to_ullong();
