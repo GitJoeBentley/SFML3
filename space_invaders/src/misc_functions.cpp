@@ -90,7 +90,11 @@ Control start(sf::RenderWindow& window, const HighScores& highScores, Invaders& 
                 window.close();
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Enter)) return Control::Keyboard;
             if (sf::Joystick::isButtonPressed(0,0)) return Control::Joystick;
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) return Control::Mouse;
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+            {
+                window.setMouseCursorVisible(false);
+                return Control::Mouse;
+            }
         }
 
         window.clear();
@@ -126,14 +130,10 @@ std::string getWelcomeText()
         std::cout << "Cannot open welcome file." << std::endl;
         return "";
     }
-
     while (getline(fin, buffer))
     {
         text += buffer += '\n';
     }
-
-    //text += "\n          Please type your name and press Enter ===> ";
-
     fin.close();
     return text;
 }
@@ -202,9 +202,9 @@ char getKey(const auto* keyPressed)
     return ' ';
 }
 
-void displayWindowObjects(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, Gun* guns,
-                          Invaders& invaders, Explosion& explosion, Bomb* bombPtr, Saucer* saucerPtr,
-                          std::list<Bullet*>& bulletsInFlight, sf::Text& gameOverText, Shield* shields)
+void displayGameObjects(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, Gun* guns,
+                        Invaders& invaders, Explosion& explosion, Bomb* bombPtr, Saucer* saucerPtr,
+                        std::list<Bullet*>& bulletsInFlight, sf::Text& gameOverText, Shield* shields)
 {
     window.clear();
     window.draw(background);
@@ -232,6 +232,7 @@ void displayWindowObjects(sf::RenderWindow& window, sf::RectangleShape& backgrou
     window.display();
 }
 
+/////////// Handle keyboard, mouse, and joystick ////////////////////////
 void pollEvent(sf::RenderWindow& window, const Control& control, Sound& sound, bool& pauseFlag, bool& gameOver, Gun*& guns, std::list<Bullet*>& bulletsInFlight, Score& score)
 {
     bool fire;
@@ -260,57 +261,55 @@ void pollEvent(sf::RenderWindow& window, const Control& control, Sound& sound, b
         }
     }
 
-        while (const std::optional event = window.pollEvent())
+    while (const std::optional event = window.pollEvent())
+    {
+        fire = false;
+        if (sf::Joystick::isButtonPressed(0, 2) || sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Space))
         {
-            fire = false;
-           // for (auto i = 0; i < 10; i++)
-           //     if (sf::Joystick::isButtonPressed(0, i)) cout << "Button " << i << endl;
-            if (sf::Joystick::isButtonPressed(0, 2) || sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Space))
-            {
-                fire = true;
-                break;
-            }
-
-            float joystickDirection = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X);
-
-            if (joystickDirection < -25.f)
-            {
-                guns[0].move(Gun::Left, GunSpeed / GunSpeed);
-                break;
-            }
-            if (joystickDirection > 25.f)
-            {
-                guns[0].move(Gun::Right, GunSpeed / GunSpeed);
-                break;
-            }
-
-            // Close window: exit
-            if (event->is<sf::Event::Closed>()) window.close();
-            else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-            {
-                if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
-                {
-                    sound.stop("Saucer");
-                    pauseFlag = !pauseFlag;
-                }
-                else if (keyPressed->scancode == sf::Keyboard::Scancode::Q)
-                    gameOver = true;
-                // Move the gun left or right
-                else if (keyPressed->scancode == sf::Keyboard::Scancode::Right)
-                {
-                    guns[0].move(Gun::Right);
-                    break;
-                }
-                else if (keyPressed->scancode == sf::Keyboard::Scancode::Left)
-                {
-                    guns[0].move(Gun::Left);
-                    break;
-                }
-            }
+            fire = true;
+            break;
         }
 
+        float joystickDirection = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X);
+
+        if (joystickDirection < -25.f)
+        {
+            guns[0].move(Gun::Left, GunSpeed / GunSpeed);
+            break;
+        }
+        if (joystickDirection > 25.f)
+        {
+            guns[0].move(Gun::Right, GunSpeed / GunSpeed);
+            break;
+        }
+
+        // Close window: exit
+        if (event->is<sf::Event::Closed>()) window.close();
+        else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+        {
+            if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
+            {
+                sound.stop("Saucer");
+                pauseFlag = !pauseFlag;
+            }
+            else if (keyPressed->scancode == sf::Keyboard::Scancode::Q)
+                gameOver = true;
+            // Move the gun left or right
+            else if (keyPressed->scancode == sf::Keyboard::Scancode::Right)
+            {
+                guns[0].move(Gun::Right);
+                break;
+            }
+            else if (keyPressed->scancode == sf::Keyboard::Scancode::Left)
+            {
+                guns[0].move(Gun::Left);
+                break;
+            }
+        }
+    }
+
     // Limit the number of bullets that can be fired at one time
-    if (fire && bulletsInFlight.size() < 2)
+    if (fire && bulletsInFlight.size() < 1)
     {
         bulletsInFlight.push_back(guns[0].shoot());
         score += -1;                                   // subtract one point for each bullet
@@ -349,7 +348,6 @@ void manageBullets(std::list<Bullet*>& bulletsInFlight, Shield* shields, Invader
                     delete (*it);
                     *it = nullptr;
                     bulletsInFlight.erase(it);
-                    //bulletHitsShield = true;
                     return;
                 }
             }
@@ -361,9 +359,8 @@ void manageBullets(std::list<Bullet*>& bulletsInFlight, Shield* shields, Invader
         {
             score += invaderHit;
             sound.start("Explosion");
-            delete (*it);
-            *it = nullptr;
             bulletsInFlight.erase(it);
+
             if (invaders.getCountVisible() == 0)
                 gameOver = true;
             // add a random invader, maybe
@@ -415,5 +412,92 @@ void manageBullets(std::list<Bullet*>& bulletsInFlight, Shield* shields, Invader
         {
             window.draw(**it);
         }
+    }
+}
+
+void processGameEnd(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, sf::Font& font,
+                    Gun* guns, Invaders& invaders, Shield* shields, const Score& score, HighScores& highScores)
+{
+    std::string statement;
+    bool highScoresEligible = highScores.eligible(score);
+
+    if (highScoresEligible)
+    {
+        if (score > highScores.getHightestScore())
+            statement += "\n         Congratulations!!!\nYou have the highest score!!!\n \n";
+        else statement += "\n        Congratulations!!!\n You made the leader board \n \n";
+    }
+    else statement = "          Game Over\n\nPress Enter to Continue";
+
+    std::string name;
+    char input = ' ';
+    std::string prompt = "Enter your name for the High Scores Leaderboard ===> ";
+    sf::Text namePrompt(font, statement, 24 );
+    namePrompt.setPosition(sf::Vector2f(window.getSize().x/10.0f, 0.75f * window.getSize().y));
+
+    sf::Text gameOverText(font, statement, 48);
+    gameOverText.setFillColor(sf::Color(0xff0000ff));
+    sf::FloatRect textRect = gameOverText.getLocalBounds();
+
+    gameOverText.setOrigin(sf::Vector2f(textRect.size.x / 2.0f, textRect.size.y / 2.0f));
+    gameOverText.setPosition(sf::Vector2f(MainWindowWidth/2.0f, MainWindowHeight/2.0f));
+
+    sf::RectangleShape textBackground(textRect.size);
+    textBackground.setOrigin(sf::Vector2f(textRect.size.x / 2.0f, textRect.size.y / 2.0f));
+    textBackground.setPosition(gameOverText.getPosition());
+    textBackground.setFillColor(sf::Color(0x010101ab));
+
+    while (window.isOpen())
+    {
+        while (const std::optional event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>()) window.close();
+
+            else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (keyPressed->scancode == sf::Keyboard::Scancode::Enter)
+                {
+                    if (highScoresEligible)
+                    {
+                        highScores.updateHighScores(Score(name,score,time(0)));
+                        highScores.WriteHighScoresFile();
+
+                    }
+                    return;
+                }
+                input = getKey(keyPressed);
+                if ((input >= 'a' && input <= 'z')||(input >= 'A' && input <= 'Z')||input == ' ')
+                {
+                    name += input;
+                }
+                if (input == '\b') // backspace
+                {
+                    name = "";
+                    // ?
+                }
+                break;
+            }
+        }
+        window.clear();
+        namePrompt.setString((prompt + name + '_'));
+        window.draw(background);
+        window.draw(text);
+        invaders.draw(window);
+        if (guns[0].isVisible())
+            window.draw(guns[0].getGun());
+        if (guns[1].isVisible())
+            window.draw(guns[1].getGun());
+        if (guns[2].isVisible())
+            window.draw(guns[2].getGun());
+        window.draw(shields[0].getShield());
+        window.draw(shields[1].getShield());
+        window.draw(shields[2].getShield());
+        window.draw(textBackground);
+        window.draw(gameOverText);
+        if (highScoresEligible) window.draw(namePrompt);
+        window.display();
+        if (isspace(name[0]))
+            name = name.substr(1);  // remove leading space from name
+        name[0] = toupper(name[0]);
     }
 }
