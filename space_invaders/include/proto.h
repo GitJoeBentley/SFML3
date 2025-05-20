@@ -25,8 +25,11 @@ std::string getWelcomeText();
 char getKey(const auto* keyPressed);
 void startSound(sf::Sound& sound);
 void stopSound(sf::Sound& sound);
-void displayWindowObjects(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, Gun* guns, Invaders& invaders, Explosion& explosion, Bomb* bombPtr, Saucer* saucerPtr, std::list<Bullet*>& bulletsInFlight, sf::Text& gameOverText, Shield* shield);
+void displayGameObjects(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, Gun* guns, Invaders& invaders, Explosion& explosion, Bomb* bombPtr, Saucer* saucerPtr, std::list<Bullet*>& bulletsInFlight, sf::Text& gameOverText, Shield* shield);
 void pollEvent(sf::RenderWindow& window, const Control& control, Sound& sound, bool& pauseFlag, bool& gameOver, Gun*& guns, std::list<Bullet*>& bulletsInFlight, Score& score);
 void manageBullets(std::list<Bullet*>& bulletsInFlight, Shield* shields, Invaders& invaders, Sound& sound, Explosion& explosion,
                    Score& score, Bomb*& bombPtr, bool& gameOver, Saucer*& saucerPtr, sf::RenderWindow& window);
+void processGameEnd(sf::RenderWindow& window, sf::RectangleShape& background, sf::Text& text, sf::Font& font,
+                    Gun* guns, Invaders& invaders, Shield* shields, const Score& score, HighScores& highScores);
+
 #endif // PROTO_H_INCLUDED
