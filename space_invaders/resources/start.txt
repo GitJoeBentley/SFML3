@@ -1,0 +1,30 @@
+                           SPACE INVADERS
+
+
+
+        Scoring
+---------------------------
+
+Shoot the laser gun      -1
+ 
+Top row invader           5
+
+Second row invader        4
+
+Third row invader         3
+
+Fourth row invader        2
+
+Bottom row invader        1
+
+The red flying saucer    10
+
+A dropping bomb          20
+
+
+
+ Controls        Keyboard          Mouse             Game Controller
+----------      ----------      ---------------      ---------------
+Start Game      Enter key       Right Button          'A' Button
+Move Gun        Arrow keys      Move left/right       Left Joystick
+Shoot Gun       Space Bar       Left Button           'X' Button         
