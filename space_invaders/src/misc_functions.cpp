@@ -90,11 +90,7 @@ Control start(sf::RenderWindow& window, const HighScores& highScores, Invaders& 
                 window.close();
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Enter)) return Control::Keyboard;
             if (sf::Joystick::isButtonPressed(0,0)) return Control::Joystick;
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
-            {
-                window.setMouseCursorVisible(false);
-                return Control::Mouse;
-            }
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) return Control::Mouse;
         }
 
         window.clear();
@@ -130,10 +126,14 @@ std::string getWelcomeText()
         std::cout << "Cannot open welcome file." << std::endl;
         return "";
     }
+
     while (getline(fin, buffer))
     {
         text += buffer += '\n';
     }
+
+    //text += "\n          Please type your name and press Enter ===> ";
+
     fin.close();
     return text;
 }
@@ -424,8 +424,8 @@ void processGameEnd(sf::RenderWindow& window, sf::RectangleShape& background, sf
     if (highScoresEligible)
     {
         if (score > highScores.getHightestScore())
-            statement += "\n         Congratulations!!!\nYou have the highest score!!!\n \n";
-        else statement += "\n        Congratulations!!!\n You made the leader board \n \n";
+            statement += "\n         Congratulations!!!\nYou have the highest score!!!\n";
+        else statement += "\n        Congratulations!!!\nYou made the leader board\n";
     }
     else statement = "          Game Over\n\nPress Enter to Continue";
 
