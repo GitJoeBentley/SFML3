@@ -11,7 +11,7 @@
 class Shield
 {
 public:
-    Shield();
+    Shield(const sf::Vector2f& position);
     ~Shield();
 
     void getShieldDataFromFile(uint64_t* InitialShieldData);

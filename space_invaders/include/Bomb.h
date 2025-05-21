@@ -3,17 +3,15 @@
 
 #include <utility>
 #include <SFML/Graphics.hpp>
+//#include "proto.h"
 #include "Bullet.h"
 #include "Invaders.h"
-//#include "Sound.h"
 #include "Gun.h"
 #include "Explosion.h"
-//#include "Shield.h"
-
-// class Invaders;  // forward declaration
 
 class Sound;
 class Shield;
+enum class GameStatus;
 
 
 class Bomb : public sf::Sprite
@@ -28,7 +26,7 @@ public:
     sf::Vector2f nosePosition() const;
     float leftSidePosition() const;
     float rightSidePosition() const;
-    bool manage(Sound& sound, Gun& gun, Explosion& explosion, int& gunInPlay, bool& gameOver, Shield* shields);
+    bool manage(Sound& sound, Gun& gun, Explosion& explosion, int& gunInPlay, GameStatus& status, Shield* shields);
 
 private:
     int imageIndex;

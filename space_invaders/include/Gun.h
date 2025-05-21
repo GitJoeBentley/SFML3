@@ -7,7 +7,6 @@
 #include "Constants.h"
 #include "Invaders.h"
 #include "Bullet.h"
-// #include "Bomb.h"
 
 class Bomb;
 
