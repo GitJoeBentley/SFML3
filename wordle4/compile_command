@@ -1,0 +1,1 @@
+g++ -Wall -Wextra -pedantic -Iinclude -lsfml-audio -lsfml-graphics -lsfml-window -lsfml-system -o wordle src/GameBoard.cpp src/globals.cpp src/Keyboard.cpp src/Key.cpp src/main.cpp src/Sounds.cpp src/Statistics.cpp src/Tile.cpp src/Tiles.cpp src/Word.cpp src/Words.cpp
