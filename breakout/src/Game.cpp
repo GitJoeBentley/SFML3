@@ -1,0 +1,515 @@
+#include <cmath>
+#include <string>
+#include <sstream>
+using namespace std;
+
+#include "Game.h"
+#include "proto.h"
+#include "RandomTiles.h"
+#include "Rainbow.h"
+#include "Crusher.h"
+#include "TwoBalls.h"
+#include "FallingTiles.h"
+#include "Tiles150.h"
+
+Game::Game(sf::RenderWindow& wnd, int number, int balls, int time_remaining)
+    : window(wnd), gameNumber(number), numBalls(balls), timeRemaining(time_remaining),
+      font(ResourcePath + "arial.ttf"), HSfont(ResourcePath + "CourierNew.ttf"),
+      gameWindow(GameWindowSize), highScores(new HighScores(gameNumber)), ballsLeft(new sf::CircleShape[balls]),
+      gameNameText(font, GameName[number]),
+      scoreText(font, "Score 0", 24),
+      ballsLeftText(font, "Balls Left", 24),
+      timeRemainingText(font, "", 24)
+{
+    static std::ostringstream sout;
+    ball[1] = nullptr;
+    gameNameText.setFillColor(sf::Color(sf::Color::Yellow));
+    sf::FloatRect textRect = gameNameText.getLocalBounds();
+    gameNameText.setOrigin(sf::Vector2f(textRect.position.x + textRect.size.x / 2.0f, textRect.position.y + textRect.size.y / 2.0f));
+    gameNameText.setPosition(sf::Vector2f(950.0f,70.0f));
+
+    scoreText.setFillColor(sf::Color(150,150,250));
+    scoreText.setPosition(sf::Vector2f(900.0f,140.0f));
+
+    timeRemainingText.setFillColor(sf::Color(250,150,150));
+    timeRemainingText.setPosition(sf::Vector2f(860.0f,325.0f));
+
+    for (int i = 0; i < balls; i++)
+    {
+        ballsLeft[i].setRadius(10.0f);
+        ballsLeft[i].setFillColor(sf::Color::White);
+        ballsLeft[i].setPosition(sf::Vector2f(900.0f + i * 30.f - 4.0f * balls, 260.f));
+    }
+
+    ballsLeftText.setFillColor(sf::Color(150,250,150));
+    ballsLeftText.setPosition(sf::Vector2f(900.0f,210.0f));
+
+    gameWindow.setFillColor(sf::Color::Black);
+    gameWindow.setOutlineColor(sf::Color::Blue);
+    gameWindow.setOutlineThickness(20.0f);
+    gameWindow.setPosition(sf::Vector2f(GameBorderWidth,GameBorderWidth));
+
+    sout.str("");
+    sout << *highScores;
+    highScoresTB = new TextBox(sout.str(), HSfont, 16, sf::Color::White, sf::Vector2f(960.0f,550.0f));
+}
+
+Game::~Game()
+{
+    delete tiles;
+    tiles = nullptr;
+    delete ball[0];
+    ball[0] = nullptr;
+    if (ball[1]) delete ball[1];
+    ball[1] = nullptr;
+    delete paddle;
+    paddle = nullptr;
+    delete highScores;
+    highScores = nullptr;
+    delete highScoresTB;
+    highScoresTB = nullptr;
+}
+
+Paddle* Game::getPaddle()
+{
+    return paddle;
+}
+
+Ball*& Game::getBall(int ballNo)
+{
+    return ball[ballNo];
+}
+
+Tiles* Game::getTiles()
+{
+    return tiles;
+}
+
+std::string Game::getName() const
+{
+    return GameName[gameNumber];
+}
+
+sf::RectangleShape& Game::getGameWindow()
+{
+    return gameWindow;
+}
+
+int Game::getNumTiles() const
+{
+    return numTiles;
+}
+
+int Game::getNumBalls() const
+{
+    return numBalls;
+}
+
+int Game::getTimeRemaining() const
+{
+    return timeRemaining;
+}
+
+Game::GameStatus Game::getStatus() const
+{
+    return status;
+}
+
+sf::Vector2f Game::centerOfGameWindow() const
+{
+    float yOffset = 0.0f;
+    // Move center down for Crusher game or 150 Tiles game
+    if (gameNumber == 4 or gameNumber == 9) yOffset = 175.0f;
+    sf::FloatRect globalRect = gameWindow.getGlobalBounds();
+    sf::FloatRect localRect = gameWindow.getLocalBounds();
+    sf::Vector2f center = sf::Vector2f(globalRect.position.y + localRect.size.x/2.0f, globalRect.position.x + localRect.size.y/2.0f + yOffset);
+    return center;
+}
+
+int Game::getScore() const
+{
+    return score;
+}
+
+Game::Ball2Status Game::getBall2Status() const
+{
+    return ball2Status;
+}
+
+int Game::getGameNumber() const
+{
+    return gameNumber;
+}
+
+HighScores* Game::getHighScores() const
+{
+    return highScores;
+}
+
+float Game::paddleHeight() const
+{
+    return paddle->getPosition().y;
+}
+
+float Game::ballHeight(int ballNo) const
+{
+    return ball[ballNo]->getPosition().y;
+}
+
+float Game::getBallSpeed(int ballNo)
+{
+    return ball[ballNo]->getSpeed();
+}
+
+TextBox* Game::getHighScoresTB()
+{
+    return highScoresTB;
+}
+
+float Game::ballXPosition(int ballNo) const
+{
+    return ball[ballNo]->getPosition().x;
+}
+
+bool Game::ball2IsActive() const
+{
+    return ball2Status == Ball2Status::Active;
+}
+
+sf::Text& Game::getScoreText()
+{
+    scoreText.setString("Score " + std::to_string(score));
+    return scoreText;
+}
+
+sf::Text& Game::getBallsLeftText()
+{
+    return ballsLeftText;
+}
+
+void Game::incrementScore(int value)
+{
+    score += value;
+    scoreText.setString("Score " + std::to_string(score));
+}
+
+void Game::decrementNumBalls()
+{
+    numBalls--;
+}
+
+///// Setters  /////
+
+void Game::setStatus(Game::GameStatus status_)
+{
+    status = status_;
+}
+
+void Game::decrementTimeRemaining()
+{
+    timeRemaining--;
+    if (timeRemaining == 0) status = GameStatus::OutOfTime;
+}
+
+void Game::update(sf::Time dt)
+{
+    paddle->update(dt);
+    ball[0]->update(dt);
+}
+
+void Game::updateTimer()
+{
+    if (timeRemaining != INT_MAX)
+    {
+        if (timerClock.getElapsedTime().asSeconds() >= 1.0f)
+        {
+            decrementTimeRemaining();
+            timerClock.restart();
+        }
+    }
+}
+
+void Game::updateBall2(sf::Time dt)
+{
+    const float RPD = 0.0174533f;   // Radians Per Degree
+
+    sf::Vector2f ball2Position = ball[1]->getPosition();
+    float speed = ball[1]->getSpeed();
+    float angle = ball[1]->getAngle();
+
+    if (ball[1]->getDirection() == Ball::Direction::Up)
+    {
+        ball[1]->setPosition(sf::Vector2f(ball2Position.x + speed * dt.asSeconds() * std::sin(RPD*angle), ball2Position.y - speed * dt.asSeconds() *std::cos(RPD*angle)));
+    }
+    else  // ball direction is down
+    {
+        ball[1]->setPosition(sf::Vector2f(ball2Position.x + speed * dt.asSeconds() * std::sin(RPD*angle), ball2Position.y + speed * dt.asSeconds() * std::cos(RPD*angle)));
+    }
+    if (ball2LeavesInnerRect())
+    {
+        ball[1]->setFillColor(sf::Color::Magenta);
+        ball2Status = Ball2Status::Active;
+    }
+}
+
+void Game::manageBall(SoundEffect& soundEffect)
+{
+    int tileValue;
+    // Ball hits a wall
+    if (ball[0]->hitTheWall() || (gameNumber == 7 && ball[1]->hitTheWall()))
+    {
+        soundEffect[SoundEffect::BallHitWall].play();
+    }
+    // ball hits a tile
+    if ((tileValue = hitATile()) > 0 || (gameNumber == 7 && (tileValue = hitATile(1)) > 0))
+    {
+        soundEffect[SoundEffect::BallHitTile].play();
+        incrementScore(tileValue);
+    }
+}
+
+void Game::managePaddle(SoundEffect& soundEffect, sf::Text& message, sf::Clock& clock)
+{
+    // Paddle hits wall
+    if (paddleHitsWall())
+    {
+        soundEffect[SoundEffect::PaddleHitWall].play();
+    }
+    // Paddle hits ball?
+    if (paddleHitsBall() || (gameNumber == 7 && paddleHitsBall(1)))
+    {
+        soundEffect[SoundEffect::PaddleHitBall].play();
+    }
+    // Paddle misses ball?
+    if (paddleMissesBall() || (gameNumber == 7 && paddleMissesBall(1)))
+    {
+        if (numBalls == 0)
+        {
+            status = GameStatus::OutOfBalls;
+        }
+        else
+        {
+            message.setCharacterSize(36);
+            message.setFillColor(sf::Color(10,220,50));
+            message.setString(std::to_string(numBalls) + " ball" + (numBalls > 1 ? "s" : "") + " to go.  Get ready ...");
+            decrementNumBalls();
+            soundEffect[static_cast<SoundEffect::SoundType>(SoundEffect::PaddleMissBall + (rand()%4))].play();
+            drawGameObjects();
+            drawCenteredText(message, window);
+            window.draw(ballsLeftText);
+            window.display();
+
+            if (gameNumber == 4) dynamic_cast<Crusher*>(this)->crush();   // Crusher
+            paddle->moveToStartPosition();
+            if (gameNumber == 7 && ball2Status == Ball2Status::Active)    // Two Balls
+                move2BallsToStartPosition();
+            else
+                ball[0]->moveToStartPosition();
+            sf::sleep(sf::Time(sf::seconds(3.0f)));
+            clock.restart();
+        }
+    }
+}
+
+int Game::hitATile(int ballNo)
+{
+    bool hit = false;
+
+    Tile* tilePtr = nullptr;
+    float angle;
+    int tileValue;
+
+    for (int row = 0; row < tiles->getNumRows(); row++)
+    {
+        for (int col = 0; col < tiles->getNumCols(); col++)
+        {
+            tilePtr = tiles->getTile(row,col);
+            if (!tilePtr) continue;
+            SideOfTile side = hitTileSide(tilePtr, ballNo);
+            if (side == SideOfTile::None) continue;
+            hit = true;
+
+            switch (side)
+            {
+            case SideOfTile::Bottom:
+                ball[ballNo]->setDirection(Ball::Direction::Down);
+                ball[ballNo]->moveDown(3);
+                break;
+            case SideOfTile::Top:
+                ball[ballNo]->setDirection(Ball::Direction::Up);
+                ball[ballNo]->moveUp(3);
+                break;
+            case SideOfTile::Right:
+                ball[ballNo]->moveRight(5.0f);
+                angle = ball[ballNo]->getAngle();
+                if (ballNo == 0 && fabs(angle) < 30.0) angle = 1.5f * angle;
+                ball[ballNo]->setAngle(-angle);
+                break;
+            case SideOfTile::Left:
+                ball[ballNo]->moveLeft(5.0f);
+                angle = ball[ballNo]->getAngle();
+                if (ballNo == 0 && fabs(angle) < 30.0) angle = 1.5f * angle;
+                ball[ballNo]->setAngle(-angle);
+                break;
+            default:
+                ;
+            }
+
+            if (hit)    // Ball has hit a tile
+            {
+                tileValue = processHitTile(tilePtr, ballNo);
+                if (numTiles == 0 or tileValue == 100) status = Game::GameStatus::Win;
+                return tileValue;
+            }
+        }
+    }
+    return -1;
+}
+
+Game::SideOfTile Game::hitTileSide(const Tile* tile, int ballNo) const
+{
+    float ballX, ballY;
+
+    ballX= ball[ballNo]->getPosition().x;
+    ballY = ball[ballNo]->getPosition().y;
+
+    if (ball[ballNo]->getDirection() == Ball::Direction::Up   && ball[ballNo]->top() < tile->bottom() && ballY > tile->top() && ballX >= tile->left() && ballX <= tile->right())
+        return SideOfTile::Bottom;
+    if (ball[ballNo]->getDirection() == Ball::Direction::Down && ball[ballNo]->bottom() >= tile->top() && ball[ballNo]->top() <= tile->bottom() && ball[ballNo]->top() < tile->bottom() && ballX >= tile->left() && ballX <= tile->right())
+        return SideOfTile::Top;
+    if (ball[ballNo]->right() >= tile->left() && ball[ballNo]->left() <= tile->left() && ballY >= tile->top() && ballY <= tile->bottom())
+        return SideOfTile::Left;
+    if (ball[ballNo]->left() <= tile->right() && ball[ballNo]->right() >= tile->right() && ballY >= tile->top() && ballY <= tile->bottom())
+        return SideOfTile::Right;
+    return SideOfTile::None;
+}
+
+void Game::drawBallsLeft()
+{
+    window.draw(ballsLeftText);
+    for (int i = 0; i < numBalls; i++) window.draw(ballsLeft[i]);
+}
+
+void Game::drawHighScores()
+{
+    highScoresTB->drawTB(window);
+}
+
+sf::Text& Game::getTimeRemainingText()
+{
+    timeRemainingText.setString("Time Remaining " + std::to_string(timeRemaining));
+    return timeRemainingText;
+}
+
+void Game::drawGameObjects()
+{
+    window.draw(gameNameText);
+    window.draw(scoreText);
+    drawHighScores();
+    if (timeRemaining != INT_MAX) window.draw(getTimeRemainingText());
+    drawBallsLeft();
+    window.draw(gameWindow);
+    window.draw(*paddle);               // draw paddle
+    // For the Random tile game, decrement LoopCounter, making ball invisible for awhile
+    if (gameNumber == 6)
+    {
+        if (LoopCounter > 0) LoopCounter--;
+        if (LoopCounter == 0) ball[0]->setFillColor(Yellow);
+    }
+    window.draw(*ball[0]);
+    if (ball[1]) window.draw(*ball[1]);
+    tiles->draw(window);                  // draw tiles
+}
+
+bool Game::paddleHitsBall(int ballNo)
+{
+    float upperPaddleYPos = paddle->getPosition().y - paddle->getSize().y / 4.0f;
+    if (ball[ballNo]->getDirection() == Ball::Direction::Up) return false;
+    if (ball[ballNo]->bottom() < upperPaddleYPos) return false;
+    if ((paddle->left() - ball[ballNo]->right() < 0.5f) && (ball[ballNo]->left() - paddle->right() < 0.5f))
+    {
+        float adjustment = rand() % 7 - 3.0f;
+        float diff = ball[ballNo]->getPosition().x - paddle->getPosition().x;
+        float pct = diff / (paddle->getSize().x / 2);
+        float currentAngle = ball[ballNo]->getAngle();
+        float newangle = currentAngle + pct * 10.0f + adjustment;
+        if (newangle > 70) newangle = 70;
+        if (newangle < -70) newangle = -70;
+        ball[ballNo]->setAngle(newangle);
+        ball[ballNo]->setDirection(Ball::Direction::Up);
+        return true;
+    }
+    return false;
+}
+
+bool Game::paddleMissesBall(int ballNo)
+{
+    if ((ball[ballNo]->getDirection() == Ball::Direction::Down) and (ball[ballNo]->getPosition().y >= paddle->getPosition().y) and
+            ((ballXPosition(ballNo) + 1.0f < paddle->left()) || (ballXPosition(ballNo) - 1.0f  >  paddle->right())))
+    {
+        if (gameNumber == 5)        // Rainbow
+        {
+            Rainbow* rainbowPtr = dynamic_cast<Rainbow*>(this);
+            rainbowPtr -> decrementColor();
+            ball[ballNo]->speedUp();      // 5%
+        }
+        else ball[ballNo]->speedUp(1.0);  // 1%
+
+        return true;
+    }
+    return false;
+}
+
+bool Game::paddleHitsWall()
+{
+    sf::Vector2f paddlePos = paddle->getPosition();
+    if (paddle->right() >= rightSideOfWindow() - GameBorderWidth)
+    {
+        paddlePos.x -= 10.0f;
+        paddle->setPosition(paddlePos);
+        return true;
+    }
+    if (paddle->left() <= leftSideOfWindow() + GameBorderWidth)
+    {
+        paddlePos.x += 10.0f;
+        paddle->setPosition(paddlePos);
+        return true;
+    }
+    return false;
+}
+
+float Game::rightSideOfWindow() const
+{
+    sf::FloatRect rect = gameWindow.getGlobalBounds();
+    return rect.position.x + rect.size.x;
+}
+
+float Game::leftSideOfWindow() const
+{
+    sf::FloatRect rect = gameWindow.getGlobalBounds();
+    return rect.position.x;
+}
+
+bool Game::ball2LeavesInnerRect()
+{
+    float ballXPos = ball[1]->getPosition().x;
+    float ballYPos = ball[1]->getPosition().y;
+    if (ballXPos < innerRect.position.x ||
+            ballXPos > innerRect.position.x + innerRect.size.x ||
+            ballYPos + ball[1]->getRadius() < innerRect.position.y - 2.f ||
+            ballYPos > innerRect.position.y + innerRect.size.y + 1.f)
+    {
+        return true;
+    }
+    return false;
+}
+
+void Game::move2BallsToStartPosition()
+{
+    ball[0]->setPosition(sf::Vector2f(BallStartPosition.x - 8.f, BallStartPosition.y));
+    ball[1]->setPosition(sf::Vector2f(BallStartPosition.x + 8.f, BallStartPosition.y));
+    ball[0]->setDirection(Ball::Direction::Up);
+    ball[1]->setDirection(Ball::Direction::Up);
+    ball[0]->setAngle((rand()%10 + 5.f));
+    ball[1]->setAngle(-(rand()%10 + 5.f));
+}
