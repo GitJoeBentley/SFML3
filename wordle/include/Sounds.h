@@ -19,12 +19,9 @@ private:
     sf::SoundBuffer enterSoundBuffer;
     sf::SoundBuffer dohSoundBuffer;
     sf::SoundBuffer winLoseSoundBuffer;
-    //sf::SoundBuffer loseSoundBuffer;
     sf::Sound letterSound;
     sf::Sound enterSound;
     sf::Sound dohSound;
-    //sf::Sound winLoseSound;
-   // sf::Sound loseSound;
 };
 
 #endif // SOUNDS_H

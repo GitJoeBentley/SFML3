@@ -14,7 +14,6 @@ class Statistics
 {
 public:
     Statistics();
-    ~Statistics();
     unsigned getGameNumber() const;
     unsigned getPlayed() const;
     std::string getStats() const;
@@ -32,8 +31,6 @@ public:
     void setTileContents(unsigned row, unsigned col, unsigned value);
     const TileContents& getTileContents() const;
     void clearTileContents();
-
-protected:
 
 private:
     unsigned gameNumber = 0;
