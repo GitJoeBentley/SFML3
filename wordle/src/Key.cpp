@@ -3,9 +3,8 @@
 #include "Constants.h"
 
 Key::Key(char ltr, sf::Texture& texture, sf::Vector2f position)
-: letter(ltr), key(texture), letterText(GameBoard::TheFont, letter, 16u)
+    : letter(ltr), key(texture), letterText(GameBoard::TheFont, letter, 16u)
 {
-    //key.setTexture(texture);
     key.setColor(LightGreyColor);
     key.setPosition(position);
     key.setOrigin(sf::Vector2f(key.getLocalBounds().size.x/2.0f,key.getLocalBounds().size.y / 2.0f));
@@ -24,10 +23,10 @@ void Key::draw(sf::RenderWindow& window)
 
 bool Key::mouseClick(sf::Vector2f mousePosition) const
 {
-   float keyTop = key.getPosition().y - key.getLocalBounds().size.y/2.0f;
-   float keyBottom = key.getPosition().y + key.getLocalBounds().size.y/2.0f;
-   float keyLeftSide = key.getPosition().x - key.getLocalBounds().size.x/2.0f;
-   float keyRightSide = key.getPosition().x + key.getLocalBounds().size.x/2.0f;
-   if (mousePosition.x < keyRightSide && mousePosition.x > keyLeftSide && mousePosition.y < keyBottom && mousePosition.y > keyTop) return true;
-   return false;
+    float keyTop = key.getPosition().y - key.getLocalBounds().size.y/2.0f;
+    float keyBottom = key.getPosition().y + key.getLocalBounds().size.y/2.0f;
+    float keyLeftSide = key.getPosition().x - key.getLocalBounds().size.x/2.0f;
+    float keyRightSide = key.getPosition().x + key.getLocalBounds().size.x/2.0f;
+    if (mousePosition.x < keyRightSide && mousePosition.x > keyLeftSide && mousePosition.y < keyBottom && mousePosition.y > keyTop) return true;
+    return false;
 }

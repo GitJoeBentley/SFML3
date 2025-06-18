@@ -5,7 +5,6 @@
 Keyboard::Keyboard()
 {
     const char letters[] = {"QWERTYUIOPASDFGHJKLZXCVBNM"};
-    // const sf::Vector2f KeySize(43.0f,58.0f);
     const sf::Vector2f KeySize(37.0f,49.0f);
     const float KeyMargin(4.0f);
 

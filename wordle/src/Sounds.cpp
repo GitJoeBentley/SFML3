@@ -34,9 +34,11 @@ void Sounds::playSound(SoundType type)
     switch (type)
     {
     case letter:
+        letterSound.setVolume(30.f);
         letterSound.play();
         break;
     case enter:
+        enterSound.setVolume(30.f);
         enterSound.play();
         break;
     case doh:

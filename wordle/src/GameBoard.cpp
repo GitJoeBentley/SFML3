@@ -396,7 +396,6 @@ GameStatus GameBoard::processEnter(const PlayerStatus& playerStatus, GameStatus&
             // Record guess history if active game
             if (playerStatus == Active)
             {
-                //cout << "guess = " << guess << endl;
                 for (auto i = 0; i < 5; i++)
                 {
                     tileValue = guess[i]*100u+guessEvaluation[i];

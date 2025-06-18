@@ -38,8 +38,6 @@ void Words::readWordFile()
         auto pr = words.insert(sword);
         if (pr.second == false) cout << *(pr.first) << endl;
     }
-    //cout << "Number of words = " << words.size() << endl;
-    //cout << "Last word is " << *words.crbegin() << endl;
 }
 
 
@@ -53,7 +51,6 @@ void Words::getRandomWord()
         ++it;
     }
     theWord = *it;
-    //cout << "The word is " << theWord << endl;
 }
 
 bool Words::isValidWord(const string& word)

@@ -14,10 +14,6 @@ Statistics::Statistics()
 {
     readStatsFile();
 }
-Statistics::~Statistics()
-{
-
-}
 
 unsigned Statistics::getGameNumber() const
 {
@@ -323,9 +319,6 @@ void Statistics::createBarGraph(sf::RectangleShape bars[7], sf::Text* distributi
         distributionValueString = to_string(distribution[i]);
         distributionValueStringSize = static_cast<unsigned>(distributionValueString.size());
         distributionValues[i] = new sf::Text(GameBoard::TheFont, distributionValueString, 14);
-        //distributionValues[i].setFont(GameBoard::TheFont);
-        //distributionValues[i].setString(distributionValueString);
-        //distributionValues[i].setCharacterSize(14);
         distributionValues[i]->setFillColor(sf::Color::White);
         distributionValues[i]->setPosition(sf::Vector2f(bars[i].getPosition().x+barLength-14.0f*distributionValueStringSize,bars[i].getPosition().y+2.0f));
     }
