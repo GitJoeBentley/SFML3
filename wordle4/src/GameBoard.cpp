@@ -280,14 +280,14 @@ void GameBoard::display()
 void GameBoard::wiggleTilesVertical(unsigned row,const string& msg)
 {
     displayMessage(msg);
-    for (unsigned col = 0; col < 5; col++)
+    for (unsigned col = 0; col < 4; col++)
     {
         tiles.getTile(row,col)->moveUp(10.0f);
         draw(msg);
         window.display();
         sf::sleep(sf::Time(sf::seconds(0.13f)));
     }
-    for (unsigned col = 0; col < 5; col++)
+    for (unsigned col = 0; col < 4; col++)
     {
         tiles.getTile(row,col)->moveUp(-10.0f);
         draw(msg);
@@ -386,7 +386,6 @@ GameStatus GameBoard::processEnter(const PlayerStatus& playerStatus, GameStatus&
     else
     {
         guess = getGuess(row);
-
         if (words.isValidWord(guess))
         {
             playSound(enter);

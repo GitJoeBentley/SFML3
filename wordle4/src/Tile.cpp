@@ -79,6 +79,8 @@ void Tile::moveRight(float pixels)
 
 void Tile::moveUp(float pixels)
 {
+    //cout << tile.getPosition().x << endl;
+    //cout << tile.getPosition().y << endl;
     tile.setPosition(sf::Vector2f(tile.getPosition().x,tile.getPosition().y-pixels));
     letter.setPosition(sf::Vector2f(letter.getPosition().x,letter.getPosition().y-pixels));
 }
