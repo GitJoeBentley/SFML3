@@ -20,8 +20,7 @@ public:
 private:
     std::set<std::string> words;
     std::string theWord;
-
-    void readWordFile();
+    void readGuessFile();
 };
 
 #endif // WORDS_H

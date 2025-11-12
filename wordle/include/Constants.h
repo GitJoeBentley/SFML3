@@ -4,9 +4,9 @@
 #include <SFML/Graphics.hpp>
 
 const std::string ResourcePath = "./resources/";
-//const std::string ResourcePath = "";
 const std::string FontFile = ResourcePath + "arial.ttf";
-const std::string WordFile = ResourcePath + "wordfile.bin";
+const std::string WordFile = ResourcePath + "wordle_words.bin";
+const std::string GuessFile = ResourcePath + "valid_wordle_guesses.bin";
 const std::string StatsFile = ResourcePath + "stats.txt";
 const std::string HowToPlayFile = ResourcePath + "howtoplay.txt";
 const std::string StatFile = ResourcePath + "stats.bin";
