@@ -12,14 +12,14 @@ using std::ifstream;
 
 Words::Words()
 {
-    readWordFile();
     getRandomWord();
+    readGuessFile();
 }
 
-void Words::readWordFile()
+void Words::readGuessFile()
 {
     // Read file in Binary
-    ifstream fin(WordFile,ios::binary);
+    ifstream fin(GuessFile,ios::binary);
     if (!fin)
     {
         std::cerr << "Unable to open word file: " << WordFile << std::endl;
@@ -38,19 +38,33 @@ void Words::readWordFile()
         auto pr = words.insert(sword);
         if (pr.second == false) cout << *(pr.first) << endl;
     }
+    fin.close();
 }
-
 
 void Words::getRandomWord()
 {
     srand(static_cast<unsigned>(time(nullptr)));
-    int index = rand() % words.size();
-    auto it = words.cbegin();
-    for (int i = 0; i < index; i++)
+    ifstream fin(WordFile,ios::binary);
+    char word[6];
+    if (!fin)
     {
-        ++it;
+        std::cerr << "Unable to open word file: " << WordFile << std::endl;
+        exit(1);
     }
-    theWord = *it;
+    fin.seekg(0, ios::end);
+    auto numberOfWords = fin.tellg() / 5;
+    int index = rand() % numberOfWords;
+    fin.seekg(0);
+    for (auto i = 0; i < index; i++)
+    {
+        fin.read(word,5);
+    }
+    fin.close();
+
+    word[5] = 0;
+    for (auto i = 0; i< 5; i++) word[i] = toupper(word[i]);
+
+    theWord = word;
 }
 
 bool Words::isValidWord(const string& word)

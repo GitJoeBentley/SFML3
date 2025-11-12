@@ -12,6 +12,7 @@ using namespace std;
 
 #include "GameBoard.h"
 #include "Constants.h"
+#include "Constants.h"
 #include "Words.h"
 #include "Key.h"
 #include "Statistics.h"
@@ -31,7 +32,6 @@ int main()
     char ltr;
     float deltaX;
     float deltaY;
-    //sf::Event event;
     sf::Vector2i mousePos;
     bool statsDisplayReturn;
     GameStatus gameStatus = Started;

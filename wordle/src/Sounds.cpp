@@ -23,7 +23,7 @@ void Sounds::playWinLoseSound(unsigned numberOfGuesses)
     string soundFile = ResourcePath + winSoundFiles[numberOfGuesses] + ".wav";
     if (!winLoseSoundBuffer.loadFromFile(soundFile)) std::cerr << "Unable to open sound file, " << soundFile << endl;
     sf::Sound* winLoseSound = new sf::Sound(winLoseSoundBuffer);
-    winLoseSound->setVolume(40.0f);
+    winLoseSound->setVolume(30.0f);
     winLoseSound->play();
     sf::sleep(sf::Time(sf::seconds(3.0)));
     delete winLoseSound;
@@ -34,11 +34,11 @@ void Sounds::playSound(SoundType type)
     switch (type)
     {
     case letter:
-        letterSound.setVolume(30.f);
+        letterSound.setVolume(20.f);
         letterSound.play();
         break;
     case enter:
-        enterSound.setVolume(30.f);
+        enterSound.setVolume(20.f);
         enterSound.play();
         break;
     case doh:
