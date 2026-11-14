@@ -25,7 +25,7 @@ const std::string DohSoundFile = ResourcePath + "homer_doh.wav";
 //const std::string LoseSoundFile = ResourcePath + "lose.wav";
 const std::string Fifth = ResourcePath + "fifth.ogg";
 const std::string Title= "WORDLE by Joe";
-const std::string WinValues[7] = {"Genius","Magnificient","Impressive","Splendid","Great","Phew","Choke"};
+const std::string WinValues[7] = {"Genius","Magnificent","Impressive","Splendid","Great","Phew","Choke"};
 
 const sf::Vector2f GameSize(720.0f, 768.0f);
 const sf::Vector2u GameSizeU(720u, 768u);
