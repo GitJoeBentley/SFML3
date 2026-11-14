@@ -8,6 +8,7 @@ Tile::Tile(sf::Vector2f position)
 {
     tile.setPosition(position);
     tile.setOrigin(sf::Vector2f(tile.getLocalBounds().size.x/2.0f,tile.getLocalBounds().size.y / 2.0f));
+    //tile.setFillColor(sf::Color(200,255,255));
     tile.setOutlineColor(GreyColor);
     tile.setOutlineThickness(1.0f);
 
@@ -20,7 +21,8 @@ Tile::Tile(sf::Vector2f position)
 
 void Tile::clear()
 {
-    tile.setFillColor(sf::Color::White);
+    //tile.setFillColor(sf::Color::White);
+    tile.setFillColor(sf::Color(255,255,200));
     letter.setString(' ');
     letter.setFillColor(sf::Color::Black);
 }

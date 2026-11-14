@@ -1,7 +1,6 @@
 #include "Sounds.h"
 #include <string>
 #include <iostream>
-using namespace std;
 
 const std::string Sounds::winSoundFiles[7] =
 {
@@ -20,8 +19,8 @@ Sounds::Sounds() :
 
 void Sounds::playWinLoseSound(unsigned numberOfGuesses)
 {
-    string soundFile = ResourcePath + winSoundFiles[numberOfGuesses] + ".wav";
-    if (!winLoseSoundBuffer.loadFromFile(soundFile)) std::cerr << "Unable to open sound file, " << soundFile << endl;
+    std::string soundFile = ResourcePath + winSoundFiles[numberOfGuesses] + ".wav";
+    if (!winLoseSoundBuffer.loadFromFile(soundFile)) std::cerr << "Unable to open sound file, " << soundFile << std::endl;
     sf::Sound* winLoseSound = new sf::Sound(winLoseSoundBuffer);
     winLoseSound->setVolume(30.0f);
     winLoseSound->play();

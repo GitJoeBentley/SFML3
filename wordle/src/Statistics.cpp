@@ -8,7 +8,6 @@
 #include <string>
 #include <cmath>
 #include <algorithm>
-using namespace std;
 
 Statistics::Statistics()
 {
@@ -139,7 +138,8 @@ bool Statistics::display(sf::RenderWindow& window, GameStatus& gameStatus, Playe
 
     sf::RectangleShape stats(StatWindowSize);
     stats.setFillColor(sf::Color(250,250,240));
-    stats.setOutlineColor(sf::Color(231,241,231));
+    //stats.setOutlineColor(sf::Color(231,241,231));
+    stats.setOutlineColor(sf::Color(193,194,193));
     stats.setOutlineThickness(10.0f);
     stats.setPosition(StatWindowPosition);
 
@@ -155,6 +155,10 @@ bool Statistics::display(sf::RenderWindow& window, GameStatus& gameStatus, Playe
     sf::Text* distributionValues[7];
 
     createBarGraph(bars,distributionValues);
+
+    sf::RectangleShape xBackground(sf::Vector2f(25.0f, 25.0f));
+    xBackground.setFillColor(sf::Color(250,0, 0));
+    xBackground.setPosition(sf::Vector2f(588.0f, 160.0f));
 
     // vertical line
     sf::RectangleShape verticalBar(sf::Vector2f(1.0f, 80.0f));
@@ -190,10 +194,15 @@ bool Statistics::display(sf::RenderWindow& window, GameStatus& gameStatus, Playe
                     deltaY = fabs(mousePos.y-shareButton.getPosition().y);
                     if (deltaX < shareButton.getSize().x/2.0f and deltaY < shareButton.getSize().y/2.0f)
                     {
+                        string msg;
                         clickedShareButton = true;
                         game.copyGameToClipboard(getTileContents(),gameNumber,numberOfGuesses);
                         window.clear(sf::Color::White);
-                        string msg = string("Your game results have been copied to the file, \"game_results.jpg\"");
+                        #ifdef _WIN32
+                        msg = string("Your game results have been copied to the clipboard");
+                        #elif
+                        msg = string("Your game results have been copied to the file, \"game_results.jpg\"");
+                        #endif // _WIN32
                         game.draw(msg);
                         window.display();
                         sf::sleep(sf::Time(sf::seconds(5.0f)));
@@ -206,6 +215,7 @@ bool Statistics::display(sf::RenderWindow& window, GameStatus& gameStatus, Playe
 
         text[7]->setString(getTimeToNextGame());
         window.draw(stats);
+        window.draw(xBackground);
         for (unsigned i = 0; i < 9; i++)
             window.draw(*(text[i]));
         window.draw(verticalBar);
@@ -227,14 +237,16 @@ void Statistics::createText(sf::Text* text[9]) const
     string str;
     text[0] = new sf::Text(GameBoard::TheFont, sf::String('X'),20);
     text[0]->setStyle(sf::Text::Bold);
-    text[0]->setFillColor(sf::Color::Black);
-    text[0]->setPosition(sf::Vector2f(StatWindowPosition.x + 0.95f*StatWindowSize.x,StatWindowPosition.y + 0.04f*StatWindowSize.x));
+    text[0]->setFillColor(sf::Color::White);
+    text[0]->setPosition(sf::Vector2f(StatWindowPosition.x + 0.98f*StatWindowSize.x,StatWindowPosition.y + 0.015f*StatWindowSize.x));
     text[0]->setOrigin(sf::Vector2f(text[0]->getLocalBounds().size.x/2.0f,text[0]->getLocalBounds().size.y / 2.0f));
+
+
 
     text[1] = new sf::Text(GameBoard::TheFont, sf::String("STATISTICS"),16);
     text[1]->setStyle(sf::Text::Bold);
     text[1]->setFillColor(sf::Color::Black);
-    text[1]->setPosition(sf::Vector2f(StatWindowPosition.x + 0.42f*StatWindowSize.x,StatWindowPosition.y + 0.08f*StatWindowSize.x));
+    text[1]->setPosition(sf::Vector2f(StatWindowPosition.x + 0.43f*StatWindowSize.x,StatWindowPosition.y + 0.072f*StatWindowSize.x));
     text[1]->setOrigin(sf::Vector2f(text[0]->getLocalBounds().size.x/2.0f,text[0]->getLocalBounds().size.y / 2.0f));
 
     text[2] = new sf::Text(GameBoard::TheFont, sf::String(getStats()),32);

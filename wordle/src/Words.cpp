@@ -5,7 +5,8 @@
 #include <string>
 #include <cctype>
 #include <ctime>
-using namespace std;
+#include <vector>
+#include <cstring>
 
 using std::string;
 using std::ifstream;
@@ -19,7 +20,7 @@ Words::Words()
 void Words::readGuessFile()
 {
     // Read file in Binary
-    ifstream fin(GuessFile,ios::binary);
+    ifstream fin(GuessFile,std::ios::binary);
     if (!fin)
     {
         std::cerr << "Unable to open word file: " << WordFile << std::endl;
@@ -36,7 +37,7 @@ void Words::readGuessFile()
         for (auto it = sword.begin(); it != sword.end(); ++it)
             *it = toupper(*it);
         auto pr = words.insert(sword);
-        if (pr.second == false) cout << *(pr.first) << endl;
+        if (pr.second == false) std::cout << *(pr.first) << std::endl;
     }
     fin.close();
 }
@@ -44,14 +45,14 @@ void Words::readGuessFile()
 void Words::getRandomWord()
 {
     srand(static_cast<unsigned>(time(nullptr)));
-    ifstream fin(WordFile,ios::binary);
+    ifstream fin(WordFile,std::ios::binary);
     char word[6];
     if (!fin)
     {
         std::cerr << "Unable to open word file: " << WordFile << std::endl;
         exit(1);
     }
-    fin.seekg(0, ios::end);
+    fin.seekg(0, std::ios::end);
     auto numberOfWords = fin.tellg() / 5;
     int index = rand() % numberOfWords;
     fin.seekg(0);
@@ -65,6 +66,7 @@ void Words::getRandomWord()
     for (auto i = 0; i< 5; i++) word[i] = toupper(word[i]);
 
     theWord = word;
+    //std::cout << theWord << std::endl;
 }
 
 bool Words::isValidWord(const string& word)

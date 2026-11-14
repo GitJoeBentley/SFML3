@@ -1,12 +1,16 @@
+#ifdef _WIN32
+#include <windows.h>
+#endif // _WIN32
 #include "GameBoard.h"
 #include "Constants.h"
 #include "Keyboard.h"
 #include "Words.h"
 #include <iostream>
 #include <cmath>
-using namespace std;
 
 sf::Font GameBoard::TheFont(FontFile);
+bool copyImageToClipboardWindows(const sf::Image& image);
+
 
 GameBoard::GameBoard()
     :  words(),
@@ -183,7 +187,7 @@ void GameBoard::copyGameToClipboard(const TileContents& tileContents, unsigned g
     }
 
     // create text line
-    std::string str = "Wordle " + to_string(gameNumber) + ' ' + to_string(numberOfGuesses) + "/6";
+    std::string str = "Wordle by Joe  " + to_string(gameNumber) + ' ' + to_string(numberOfGuesses) + "/6";
     sf::Text line(TheFont, sf::String(str));
     line.setCharacterSize(16);
     line.setFillColor(sf::Color::Black);
@@ -202,24 +206,32 @@ void GameBoard::copyGameToClipboard(const TileContents& tileContents, unsigned g
             ptr2Tiles[row][col].setPosition(sf::Vector2f(col*27.0f + 10.0f,row*29.0f + 40.0f));
         }
     }
+    // Create a temporary RenderWindow
+    sf::RenderWindow tempRW(sf::VideoMode(sf::Vector2u(180u,220u)), "");
 
-    window.clear(sf::Color::White);
-    window.draw(line);
+    tempRW.clear(sf::Color::White);
+    tempRW.draw(line);
     for (auto i = 0; i < 2; i++)
     {
         for (auto row = 0U; row <= maxRow; row++)  // draw tiles
         {
             for (auto col = 0U; col < Tiles::Cols; col++)
             {
-                window.draw(ptr2Tiles[row][col]);
+                tempRW.draw(ptr2Tiles[row][col]);
             }
         }
-        window.display();
+        tempRW.display();
     }
 
-    sf::Texture texture(window.getSize());
-    texture.update(window);
+    sf::Texture texture(tempRW.getSize());
+    texture.update(tempRW);
     sf::Image screenshot = texture.copyToImage();
+
+    // study image data
+    #ifdef _WIN32
+    copyImageToClipboardWindows(screenshot);
+    #endif // _WIN32
+
     if (!screenshot.saveToFile("game_results.jpg"))
         cerr << "Unable to save game_results.jpg" << endl;
     delete [] ptr2Tiles;
@@ -450,7 +462,6 @@ GameStatus GameBoard::processEnter(const PlayerStatus& playerStatus, GameStatus&
 
 void GameBoard::startPracticeGame()
 {
-    get_background().setFillColor(LightYellowColor);
     get_tiles().clear();
     getKeyboard().clearColors();
     getWords().getRandomWord();
@@ -524,4 +535,62 @@ std::string GameBoard::getHowToPlayText() const
 
     fin.close();
     return text;
+}
+
+
+bool copyImageToClipboardWindows(const sf::Image& image) {
+    sf::Vector2u size = image.getSize();
+    if (size.x == 0 || size.y == 0) return false;
+
+    const std::uint8_t* pixels = image.getPixelsPtr(); // SFML 3 (use sf::Uint8 for SFML 2)
+    std::size_t pixelCount = static_cast<std::size_t>(size.x) * size.y;
+    std::size_t dataSize = pixelCount * 4;
+
+    // Allocate global memory for BITMAPINFOHEADER + BGRA pixel data
+    HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, sizeof(BITMAPINFOHEADER) + dataSize);
+    if (!hMem) return false;
+
+    void* pMem = GlobalLock(hMem);
+    if (!pMem) {
+        GlobalFree(hMem);
+        return false;
+    }
+
+    // Set up the bitmap header
+    BITMAPINFOHEADER* bih = static_cast<BITMAPINFOHEADER*>(pMem);
+    ZeroMemory(bih, sizeof(BITMAPINFOHEADER));
+    bih->biSize = sizeof(BITMAPINFOHEADER);
+    bih->biWidth = static_cast<LONG>(size.x);
+    bih->biHeight = -static_cast<LONG>(size.y); // Negative height = top-down image
+    bih->biPlanes = 1;
+    bih->biBitCount = 32;
+    bih->biCompression = BI_RGB;
+
+    // Convert RGBA (SFML) to BGRA (Windows DIB)
+    std::uint8_t* dest = static_cast<std::uint8_t*>(pMem) + sizeof(BITMAPINFOHEADER);
+    for (std::size_t i = 0; i < dataSize; i += 4) {
+        dest[i + 0] = pixels[i + 2]; // Blue
+        dest[i + 1] = pixels[i + 1]; // Green
+        dest[i + 2] = pixels[i + 0]; // Red
+        dest[i + 3] = pixels[i + 3]; // Alpha
+    }
+
+    GlobalUnlock(hMem);
+
+    // Push to clipboard
+    if (!OpenClipboard(nullptr)) {
+        GlobalFree(hMem);
+        return false;
+    }
+
+    EmptyClipboard();
+    if (!SetClipboardData(CF_DIB, hMem)) {
+        CloseClipboard();
+        GlobalFree(hMem);
+        return false;
+    }
+
+    CloseClipboard();
+    // Do NOT call GlobalFree(hMem) after SetClipboardData succeeds; the OS now owns it.
+    return true;
 }

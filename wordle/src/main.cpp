@@ -8,7 +8,6 @@
 #include <cstring>
 #include <ctime>
 #include <cmath>
-using namespace std;
 
 #include "GameBoard.h"
 #include "Constants.h"
@@ -38,6 +37,7 @@ int main()
 
     Statistics stats;
     GameBoard game;
+
     PlayerStatus playerStatus;
 
     // Music
@@ -68,7 +68,6 @@ int main()
             game.display();
         }
 
-        game.get_background().setFillColor(sf::Color::White);
         stats.display(game.get_window(), gameStatus,playerStatus, game);
         message = "Press F1 to play a practice game";
     }
