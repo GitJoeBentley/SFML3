@@ -38,6 +38,7 @@ const sf::Color YellowColor = sf::Color(218,192,71);
 const sf::Color GreyColor =   sf::Color(128,128,128);
 const sf::Color LightGreyColor = sf::Color(210,210,210);
 const sf::Color LightYellowColor = sf::Color(245,235,185);
+
 const sf::Color TileColors[3] = {GreyColor,YellowColor,GreenColor};
 
 const float TileWidth = 60.0f;

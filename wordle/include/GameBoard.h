@@ -26,7 +26,7 @@ public:
     sf::Vector2f getStatsButtonPosition() const;
     sf::Vector2f gethowtoplayButtonPosition() const;
 
-    void display();
+    void display(bool isAPracticeGame = false);
     void draw(string msg = "");
     void displayGuess(unsigned row);
     void wiggleTiles(unsigned targetRow,const string& msg);
@@ -44,6 +44,7 @@ public:
     void copyGameToClipboard(const TileContents& tileContents, unsigned gameNumber, unsigned numberOfGuesses);
     void howtoplay();
     void startPracticeGame();
+    void displayPracticeMessage();
 
     static sf::Font TheFont;
 

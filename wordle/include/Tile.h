@@ -25,7 +25,7 @@ public:
     char getChar() const;
     sf::Text& getLetter();
     void flip(float percent);
-    void clear();
+    void clear(sf::Color color = sf::Color(250,225,225));
 
 private:
     sf::RectangleShape tile;

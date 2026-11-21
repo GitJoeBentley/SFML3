@@ -20,7 +20,7 @@ public:
     void wiggleRowVertical(unsigned row);
     void resetRowPosition(unsigned row);
     void updateRow(unsigned row, unsigned* colors);
-    void clear();
+    void clear(sf::Color color = sf::Color(250,225,250));
     float getInitialRowYPosition(unsigned row) const;
 private:
     Tile* array[Rows][Cols];
