@@ -284,8 +284,9 @@ void GameBoard::draw(string msg)
     keyboard.getBackspaceKey().draw(window);      // Draw the backspace key
 }
 
-void GameBoard::display()
+void GameBoard::display(bool isAPracticeGame)
 {
+    if (isAPracticeGame) displayPracticeMessage();
     window.display();
 }
 
@@ -332,6 +333,17 @@ void GameBoard::displayMessage(const string& msg)
     messageBox.setOrigin(sf::Vector2f(messageBox.getLocalBounds().size.x/2.0f,messageBox.getLocalBounds().size.y / 2.0f));
 
     window.draw(messageBox);
+    window.draw(message);
+}
+
+void GameBoard::displayPracticeMessage()
+{
+    sf::Text message(TheFont, "Practice Game");
+    message.setCharacterSize(20);
+    message.setStyle(sf::Text::Bold);
+    message.setFillColor(sf::Color::Magenta);
+    message.setPosition(sf::Vector2f(GameSize.x/2.0f,0.95f*GameSize.y));
+    message.setOrigin(sf::Vector2f(message.getLocalBounds().size.x/2.0f,message.getLocalBounds().size.y / 2.0f));
     window.draw(message);
 }
 
@@ -462,6 +474,7 @@ GameStatus GameBoard::processEnter(const PlayerStatus& playerStatus, GameStatus&
 
 void GameBoard::startPracticeGame()
 {
+    background.setFillColor(sf::Color::Cyan);
     get_tiles().clear();
     getKeyboard().clearColors();
     getWords().getRandomWord();

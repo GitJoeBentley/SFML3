@@ -26,13 +26,13 @@ Tiles::~Tiles()
     }
 }
 
-void Tiles::clear()
+void Tiles::clear(sf::Color color)
 {
     for (auto row = 0U; row < Rows; row++)
     {
         for (auto col = 0U; col < Cols; col++)
         {
-            array[row][col]->clear();
+            array[row][col]->clear(color);
         }
     }
 }

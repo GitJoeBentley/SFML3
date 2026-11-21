@@ -39,6 +39,7 @@ int main()
     GameBoard game;
 
     PlayerStatus playerStatus;
+    bool isAPracticeGame = false;
 
     // Music
     sf::Music music;
@@ -216,9 +217,10 @@ int main()
                 targetCol = 0;
                 hintCount = 0;
                 game.startPracticeGame();
+                isAPracticeGame = true;
             }
 
-            game.display();
+            game.display(isAPracticeGame);
             ltr = 0;
         }
     }
